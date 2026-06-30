@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+
+// Each demo is a published eLearning package (HTML5 web output) dropped into
+// public/demos/<name>/. It is then served at /demos/<name>/ and can be linked
+// or embedded below. See README.md for how to add one.
+const demos: { title: string; description: string; path: string }[] = [
+  // Example once you add a package:
+  // { title: 'MQM Severity Alignment', description: 'A short microlearning module.', path: '/demos/mqm-severity/index.html' },
+];
+---
+
+<Base title="Demos — Andy Rogers" description="Interactive learning samples by Andy Rogers.">
+  <div class="container">
+    <section class="hero">
+      <h1>Demos</h1>
+      <p class="tagline">Interactive learning samples you can try in the browser.</p>
+    </section>
+
+    {demos.length === 0 ? (
+      <p class="note">
+        Interactive samples are coming soon. Each will run right here in the page — no login, no
+        learning platform required.
+      </p>
+    ) : (
+      demos.map((demo) => (
+        <section>
+          <h2>{demo.title}</h2>
+          <p>{demo.description}</p>
+          <iframe class="demo-frame" src={demo.path} title={demo.title} loading="lazy"></iframe>
+          <p><a href={demo.path}>Open full screen →</a></p>
+        </section>
+      ))
+    )}
+  </div>
+</Base>

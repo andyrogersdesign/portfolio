@@ -1,0 +1,91 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const featured = (await getCollection('work', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+
+const impact = [
+  { figure: '−26% / −22%', label: 'major / minor localisation defects, year-on-year, across 1,750+ external linguists' },
+  { figure: '20% → 76%', label: 'judgement alignment on errors, from a programme built in one week' },
+  { figure: '23% → 62%', label: 'participation in non-mandatory learning' },
+  { figure: '97%', label: 'satisfaction at the Amazon Localization Summit (+4,300 bps year-on-year)' },
+];
+
+const capabilities = [
+  { name: 'AI capability & enablement', detail: 'GenAI integration, LLM applications, agentic workflows, AI-literacy and adoption programmes' },
+  { name: 'Learning Experience Design', detail: 'instructional design, adult learning, assessment, eLearning, needs analysis' },
+  { name: 'Behaviour change & evaluation', detail: 'change management, adoption, impact measurement from reaction through to business outcomes' },
+  { name: 'Data & automation', detail: 'Python automation, learning analytics, data visualisation, dashboards' },
+  { name: 'Design & multimedia', detail: 'Adobe Creative Cloud, video production, motion graphics, brand and design systems' },
+];
+---
+
+<Base>
+  <div class="container">
+    <section class="hero">
+      <h1>Andy Rogers</h1>
+      <p class="role">Senior Learning Strategist</p>
+      <p class="tagline">Enabling AI adoption and measurable behaviour change at scale.</p>
+      <div class="prose">
+        <p>
+          I build and lead Learning Experience Design for Amazon's Translation Services, turning AI
+          and complex operational problems into workforce capability and lasting behaviour change. I
+          move into an unfamiliar domain, work out what actually needs to change, and make it
+          learnable, usable, and effective.
+        </p>
+        <p>
+          I'm a maker as much as a strategist: equally at home building the data pipelines, AI tools,
+          video, and platforms myself, or developing a team to deliver them alongside me. This site
+          collects the work and the thinking behind it.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Selected impact</h2>
+      <ul class="impact">
+        {impact.map((i) => (
+          <li><strong>{i.figure}</strong>{i.label}</li>
+        ))}
+      </ul>
+    </section>
+
+    {featured.length > 0 && (
+      <section>
+        <h2>Featured work</h2>
+        <ul class="cards">
+          {featured.map((entry) => (
+            <li class="card">
+              <a href={`/work/${entry.id}/`}>
+                <span class="theme">{entry.data.theme}</span>
+                <h3>{entry.data.title}</h3>
+                <p>{entry.data.summary}</p>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <p><a href="/work/">See all work →</a></p>
+      </section>
+    )}
+
+    <section>
+      <h2>What I do</h2>
+      <ul class="caps">
+        {capabilities.map((c) => (
+          <li><strong>{c.name}</strong> — {c.detail}</li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="prose">
+      <h2>Get in touch</h2>
+      <p>
+        <a href="mailto:hello@andyrogers.design">hello@andyrogers.design</a> ·
+        <a href="https://www.linkedin.com/in/andyrogersdesign">LinkedIn</a> ·
+        <a href="https://newsletter.andyrogers.design">Newsletter</a>
+      </p>
+    </section>
+  </div>
+</Base>

@@ -1,0 +1,33 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+
+const entries = (await getCollection('work', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
+);
+---
+
+<Base title="Work — Andy Rogers" description="Case studies and stories from Andy Rogers' learning design work.">
+  <div class="container">
+    <section class="hero">
+      <h1>Work</h1>
+      <p class="tagline">Case studies and stories — the problem, how I tackled it, and what you can take away.</p>
+    </section>
+
+    {entries.length === 0 ? (
+      <p>Case studies are on the way.</p>
+    ) : (
+      <ul class="cards">
+        {entries.map((entry) => (
+          <li class="card">
+            <a href={`/work/${entry.id}/`}>
+              <span class="theme">{entry.data.theme}</span>
+              <h3>{entry.data.title}</h3>
+              <p>{entry.data.summary}</p>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+  </div>
+</Base>

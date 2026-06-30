@@ -1,0 +1,4 @@
+# Tells Netlify how to build and where the finished site lives.
+[build]
+  command = "npm run build"
+  publish = "dist"

@@ -1,0 +1,46 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const {
+  title = 'Andy Rogers — Senior Learning Strategist',
+  description = 'Senior learning strategist: AI capability, adoption, and measurable behaviour change.',
+} = Astro.props;
+
+const nav = [
+  { href: '/', label: 'Home' },
+  { href: '/work/', label: 'Work' },
+  { href: '/demos/', label: 'Demos' },
+];
+---
+
+<!doctype html>
+<html lang="en-GB">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/">Andy Rogers</a>
+      <nav>
+        {nav.map((item) => <a href={item.href}>{item.label}</a>)}
+        <a class="ext" href="https://www.linkedin.com/in/andyrogersdesign">LinkedIn</a>
+        <a class="ext" href="https://newsletter.andyrogers.design">Newsletter</a>
+      </nav>
+    </header>
+    <main>
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <p>© {new Date().getFullYear()} Andy Rogers · <a href="mailto:hello@andyrogers.design">hello@andyrogers.design</a></p>
+    </footer>
+  </body>
+</html>
