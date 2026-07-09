@@ -58,10 +58,14 @@ const capabilities = [
         <ul class="cards">
           {featured.map((entry) => (
             <li class="card">
-              <a href={`/work/${entry.id}/`}>
+              <a
+                href={entry.data.labUrl ?? `/work/${entry.id}/`}
+                {...(entry.data.labUrl ? { target: '_blank', rel: 'noopener' } : {})}
+              >
                 <span class="theme">{entry.data.theme}</span>
                 <h3>{entry.data.title}</h3>
                 <p>{entry.data.summary}</p>
+                {entry.data.labUrl && <span class="card-cta">Read on the Lab →</span>}
               </a>
             </li>
           ))}

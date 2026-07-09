@@ -3,7 +3,9 @@ import Base from '../../layouts/Base.astro';
 import { getCollection, render } from 'astro:content';
 
 export async function getStaticPaths() {
-  const entries = await getCollection('work');
+  // Build on-site pages only for published work that isn't linked out to the Lab.
+  // Drafts and Lab-linked entries get no page at all.
+  const entries = await getCollection('work', ({ data }) => !data.draft && !data.labUrl);
   return entries.map((entry) => ({
     params: { slug: entry.id },
     props: { entry },

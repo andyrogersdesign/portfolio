@@ -11,7 +11,7 @@ const entries = (await getCollection('work', ({ data }) => !data.draft)).sort(
   <div class="container">
     <section class="hero">
       <h1>Work</h1>
-      <p class="tagline">Case studies and stories — the problem, how I tackled it, and what you can take away.</p>
+      <p class="tagline">Thinking and execution: the problem, what I built, and the impact.</p>
     </section>
 
     {entries.length === 0 ? (
@@ -20,10 +20,14 @@ const entries = (await getCollection('work', ({ data }) => !data.draft)).sort(
       <ul class="cards">
         {entries.map((entry) => (
           <li class="card">
-            <a href={`/work/${entry.id}/`}>
+            <a
+              href={entry.data.labUrl ?? `/work/${entry.id}/`}
+              {...(entry.data.labUrl ? { target: '_blank', rel: 'noopener' } : {})}
+            >
               <span class="theme">{entry.data.theme}</span>
               <h3>{entry.data.title}</h3>
               <p>{entry.data.summary}</p>
+              {entry.data.labUrl && <span class="card-cta">Read on the Lab →</span>}
             </a>
           </li>
         ))}

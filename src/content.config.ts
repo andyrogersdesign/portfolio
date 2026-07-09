@@ -11,6 +11,9 @@ const work = defineCollection({
     theme: z.string(), // e.g. "Organisational change & AI adoption"
     date: z.coerce.date(),
     metrics: z.array(z.string()).default([]),
+    // If set, the tile links straight out to the Lab article and no on-site
+    // case-study page is generated. Leave unset for work that lives on-site.
+    labUrl: z.string().url().optional(),
     draft: z.boolean().default(false),
   }),
 });
