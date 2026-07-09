@@ -2,8 +2,8 @@
  * Andy Rogers — portfolio
  * Swiss International Style design system (IBM Plex Sans, stone palette,
  * opacity-based hierarchy, 12-col rhythm, generous whitespace, one accent).
- * Accent: Swiss Red #C8102E. To swap, change --accent (RGB triplet) below:
- *   Cobalt 0 59 142 · Golden 240 180 41 · Forest 45 106 79
+ * Accent: Cobalt #003B8E. To swap, change --accent (RGB triplet) below:
+ *   Swiss Red 200 16 46 · Golden 240 180 41 · Forest 45 106 79
  * ------------------------------------------------------------------ */
 
 :root {
@@ -15,7 +15,7 @@
   --border-subtle: #f0efed;
 
   --ink: 28 25 23;        /* stone-900 (as RGB triplet for opacity mixing) */
-  --accent: 200 16 46;    /* Swiss Red #C8102E */
+  --accent: 0 59 142;     /* Cobalt #003B8E */
 
   --measure: 60ch;
   --radius: 0px;          /* Swiss style is rectilinear */
