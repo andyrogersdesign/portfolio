@@ -41,7 +41,6 @@ const nav = [
       <a class="brand" href="/">Andy Rogers</a>
       <nav>
         {nav.map((item) => <a href={item.href}>{item.label}</a>)}
-        <a class="ext" href="https://www.linkedin.com/in/andyrogersdesign">LinkedIn</a>
         <a class="ext" href="https://lab.andyrogers.design">The Lab</a>
       </nav>
     </header>
@@ -49,7 +48,7 @@ const nav = [
       <slot />
     </main>
     <footer class="site-footer">
-      <p>© {new Date().getFullYear()} Andy Rogers · <a href="mailto:hello@andyrogers.design">hello@andyrogers.design</a></p>
+      <p>© {new Date().getFullYear()} Andy Rogers · <a href="mailto:hello@andyrogers.design">hello@andyrogers.design</a> · <a href="https://www.linkedin.com/in/andyrogersdesign">LinkedIn</a></p>
     </footer>
   </body>
 </html>
