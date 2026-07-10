@@ -4,9 +4,19 @@ import Base from '../layouts/Base.astro';
 // Each demo is a published eLearning package (HTML5 web output) dropped into
 // public/demos/<name>/. It is then served at /demos/<name>/ and can be linked
 // or embedded below. See README.md for how to add one.
-const demos: { title: string; description: string; path: string }[] = [
-  // Example once you add a package:
-  // { title: 'MQM Severity Alignment', description: 'A short microlearning module.', path: '/demos/mqm-severity/index.html' },
+type Demo = {
+  title: string;
+  description: string;
+  path: string;
+};
+
+const demos: Demo[] = [
+  {
+    title: 'AES Report',
+    description:
+      'The payoff of the Actionable Experience Survey method: turn a set of responses into a Below / Above the Bar report. Click Load sample data to explore a 12-respondent example, or drop in your own response files. Hover any band segment to see the statement respondents picked, and expand a question\u2019s comments to read what they said in their own words. Everything runs locally in your browser \u2014 nothing is uploaded.',
+    path: '/demos/aes-report/index.html',
+  },
 ];
 ---
 
@@ -17,20 +27,66 @@ const demos: { title: string; description: string; path: string }[] = [
       <p class="tagline">Interactive learning samples you can try in the browser.</p>
     </section>
 
-    {demos.length === 0 ? (
-      <p class="note">
-        Interactive samples are coming soon. Each will run right here in the page — no login, no
-        learning platform required.
+    {demos.map((demo) => (
+      <section>
+        <h2>{demo.title}</h2>
+        <p>{demo.description}</p>
+        <iframe class="demo-frame" src={demo.path} title={demo.title} loading="lazy"></iframe>
+        <p><a href={demo.path}>Open full screen →</a></p>
+      </section>
+    ))}
+
+    <section>
+      <h2>Build your own survey</h2>
+      <p>
+        Write the questions, choose your bands, and get back a shareable link. Send that link to
+        your respondents &mdash; they take the survey in their browser and email their responses
+        back to you, or copy a link that opens the report above with their single response
+        pre-loaded. No server, no login, no data touching anyone else&rsquo;s infrastructure.
       </p>
-    ) : (
-      demos.map((demo) => (
-        <section>
-          <h2>{demo.title}</h2>
-          <p>{demo.description}</p>
-          <iframe class="demo-frame" src={demo.path} title={demo.title} loading="lazy"></iframe>
-          <p><a href={demo.path}>Open full screen →</a></p>
-        </section>
-      ))
-    )}
+      <p>
+        <a class="btn-link" href="/demos/aes-builder/index.html">Open the survey builder &rarr;</a>
+      </p>
+      <p class="small-note">
+        For a step-by-step run-through, click <em>Load demo</em> inside the builder to see how
+        the example above is put together.
+      </p>
+    </section>
+
+    <section>
+      <h2>Try it in your own LMS</h2>
+      <p>
+        A ready-to-upload example AES survey &mdash; a short post-workshop reflection on giving
+        effective feedback. It records each respondent&rsquo;s band, the exact statement they picked,
+        and any free-text comment as SCORM interactions, so you can export the responses (as a
+        Track-details CSV from Totara, or the equivalent from any modern LMS) and drop them into the
+        report above.
+      </p>
+      <div class="demo-downloads">
+        <p class="demo-downloads-head">Download the SCORM package</p>
+        <ul>
+          <li>
+            <a href="/demos/aes-survey/downloads/aes-demo-feedback-scorm2004.zip" download>SCORM 2004 (.zip)</a>
+            <span class="demo-downloads-note"> — for most modern LMSs (Totara, Moodle, SCORM Cloud, etc.)</span>
+          </li>
+          <li>
+            <a href="/demos/aes-survey/downloads/aes-demo-feedback-scorm12.zip" download>SCORM 1.2 (.zip)</a>
+            <span class="demo-downloads-note"> — for older LMSs that don&rsquo;t support 2004</span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="demo-author">
+      <h2>Under the hood</h2>
+      <p>
+        AESurvey Studio is open source (MIT licence). The builder above is the current authoring
+        surface; the model, SCORM engine, and analyser are all available for adaptation or
+        integration into your own tooling.
+      </p>
+      <p>
+        <a href="https://github.com/andyrogersdesign/aesurveys">View on GitHub &rarr;</a>
+      </p>
+    </section>
   </div>
 </Base>

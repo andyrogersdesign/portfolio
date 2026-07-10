@@ -1,0 +1,721 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0c0a09" media="(prefers-color-scheme: dark)" />
+    <title>AES Report</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #fafaf9; --surface: #f5f5f4; --border: #e7e5e4;
+        --ink: #1c1917; --ink-70: rgba(28, 25, 23, 0.7); --ink-40: rgba(28, 25, 23, 0.42); --ink-20: rgba(28, 25, 23, 0.16);
+        --accent: #2d6a4f;
+        --alarming: #c8102e; --concerning: #f0b429; --acceptable: #74a892; --superior: #2d6a4f;
+        --font: "IBM Plex Sans", "Hanken Grotesk", "Barlow", "DM Sans", system-ui, sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0c0a09; --surface: #1c1917; --border: #292524;
+          --ink: #fafaf9; --ink-70: rgba(250, 250, 249, 0.7); --ink-40: rgba(250, 250, 249, 0.42); --ink-20: rgba(250, 250, 249, 0.2);
+        }
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font);
+        font-weight: 400; line-height: 1.65; -webkit-font-smoothing: antialiased; }
+      .wrap { max-width: 960px; margin: 0 auto; padding: 64px 24px 96px; }
+      @media (max-width: 640px) { .wrap { padding: 40px 16px 64px; } }
+      h1 { font-weight: 300; font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.02em;
+        line-height: 1.05; margin: 0 0 12px; text-wrap: balance; }
+      .lede { color: var(--ink-70); max-width: 60ch; margin: 0 0 48px; font-size: 1.05rem; }
+      h2 { font-weight: 300; font-size: 1.6rem; letter-spacing: -0.01em; line-height: 1.2; margin: 0 0 8px; text-wrap: balance; }
+      .q-prompt { font-weight: 500; font-size: 1.05rem; margin: 0; text-wrap: pretty; }
+      .cap { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-40); margin: 0 0 8px; }
+      a { color: var(--accent); }
+      .tnum { font-variant-numeric: tabular-nums; }
+
+      button { font: inherit; cursor: pointer; }
+      .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
+        padding: 0 20px; background: var(--accent); color: #fafaf9; border: 1px solid var(--accent); font-weight: 500; }
+      .btn.ghost { background: transparent; color: var(--ink); border-color: var(--border); }
+      .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+      @media (prefers-reduced-motion: no-preference) { .btn { transition: background 0.15s, border-color 0.15s; } }
+
+      .drop { border: 1px dashed var(--border); background: var(--surface); padding: 40px 24px; text-align: center; color: var(--ink-70); }
+      .drop.over { border-color: var(--accent); }
+      .drop strong { color: var(--ink); font-weight: 500; }
+      .drop code { font-family: "IBM Plex Mono", ui-monospace, monospace; font-size: 0.9em; }
+      .controls { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 20px; }
+      input[type="file"] { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+      .paste-panel { margin-top: 16px; }
+      .paste-panel[open] { padding: 16px; background: var(--surface); border: 1px solid var(--border); }
+      .paste-panel summary { display: none; }
+      .paste-label { display: block; font-size: 0.9rem; margin-bottom: 8px; }
+      .paste-hint { color: var(--ink-40); font-size: 0.85em; }
+      .paste-panel textarea { width: 100%; min-height: 120px; padding: 10px 12px; background: var(--bg);
+        color: var(--ink); border: 1px solid var(--border); font: 0.9rem/1.45 "IBM Plex Mono", ui-monospace, monospace;
+        resize: vertical; }
+      .paste-panel textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+      .paste-actions { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+      .paste-status { color: var(--ink-70); font-size: 0.9rem; }
+      .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+        clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+      .summary { margin: 48px 0 32px; padding: 40px 32px 36px; background: var(--surface);
+        border: 1px solid var(--border); }
+      .summary h2 { font-size: clamp(1.7rem, 3vw, 2.1rem); }
+      .counts { color: var(--ink-70); margin: 0 0 24px; }
+      /* Explicit divider between the overall summary and per-question detail. */
+      .section-head { display: flex; align-items: center; gap: 16px; margin: 40px 0 8px; }
+      .section-head h3 { margin: 0; font-weight: 300; font-size: 1.2rem; letter-spacing: -0.005em; }
+      .section-head hr { flex: 1; border: 0; border-top: 1px solid var(--border); margin: 0; }
+      .q { border: 1px solid var(--border); background: var(--surface); padding: 24px 32px; margin: 16px 0; }
+      .q-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+      .kind { white-space: nowrap; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em;
+        color: var(--accent); border: 1px solid var(--border); padding: 2px 8px; }
+      .q-n { color: var(--ink-40); font-size: 0.78rem; margin: 6px 0 20px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+      .bar-wrap { position: relative; margin: 8px 0; }
+      .bar { display: flex; height: 32px; background: var(--border); }
+      /* The overall bar reads as a headline chart, not another data row. */
+      .summary .bar { height: 56px; }
+      .seg { height: 100%; }
+      .seg:hover, .seg:focus { filter: brightness(1.08); }
+      .seg:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+      @media (prefers-reduced-motion: no-preference) { .seg { transition: filter 0.12s; } }
+      .bar-line { position: absolute; top: -6px; bottom: -6px; width: 2px; background: var(--ink); }
+      .bar-tick { position: absolute; top: -22px; transform: translateX(-50%); font-size: 0.66rem;
+        text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-40); white-space: nowrap; }
+      .split { display: flex; justify-content: space-between; gap: 16px; font-size: 0.9rem; margin-top: 16px; }
+      .split b { font-weight: 500; }
+      .split .below { color: var(--alarming); }
+      .split .above { color: var(--superior); }
+      .breakdown { font-size: 0.8rem; color: var(--ink-40); margin-top: 8px; }
+      .legend { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 0.8rem; color: var(--ink-70); margin-top: 16px; }
+      .legend span { display: inline-flex; align-items: center; gap: 8px; }
+      .swatch { width: 12px; height: 12px; display: inline-block; }
+
+      /* Statement tooltip: inverted panel above the hovered/focused segment. */
+      .tip { position: fixed; z-index: 50; max-width: 340px; padding: 12px 14px; background: var(--ink); color: var(--bg);
+        font-size: 0.82rem; line-height: 1.45; pointer-events: none; opacity: 0; visibility: hidden;
+        transform: translate(-50%, calc(-100% - 10px)); box-shadow: 0 4px 24px rgba(0, 0, 0, 0.22); }
+      .tip.show { opacity: 1; visibility: visible; }
+      .tip .tip-head { display: flex; align-items: center; gap: 8px; font-weight: 500; }
+      .tip .tip-n { display: block; opacity: 0.7; margin-top: 3px; font-variant-numeric: tabular-nums; }
+      .tip .tip-st { display: block; margin-top: 8px; font-style: italic; }
+      .tip .tip-note { display: block; margin-top: 10px; opacity: 0.7; font-size: 0.78rem;
+        letter-spacing: 0.01em; }
+      .tip .tip-list { list-style: none; padding: 0; margin: 6px 0 0; }
+      .tip .tip-list li { margin: 6px 0; font-style: italic; }
+      .tip .tip-count { font-style: normal; opacity: 0.7; }
+      .tip .swatch { width: 10px; height: 10px; }
+
+      /* Free-text comments, tucked into a per-question disclosure. */
+      .comments { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px; }
+      .comments summary { cursor: pointer; font-size: 0.82rem; color: var(--accent); font-weight: 500;
+        list-style: none; text-transform: uppercase; letter-spacing: 0.06em; }
+      .comments summary::-webkit-details-marker { display: none; }
+      .comments summary::before { content: "+"; display: inline-block; width: 1.1em; font-weight: 500; }
+      .comments[open] summary::before { content: "\2212"; }
+      .comment-group { margin-top: 20px; }
+      .comment-group:first-of-type { margin-top: 14px; }
+      .comment-group-head { display: flex; align-items: center; gap: 8px; margin: 0 0 10px;
+        font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-70);
+        font-weight: 500; }
+      .comment-group-head .swatch { width: 10px; height: 10px; }
+      .comment-list { list-style: none; padding: 0; margin: 0; }
+      .comment-list li { border-left: 2px solid var(--border); padding: 4px 0 4px 14px; margin: 10px 0;
+        color: var(--ink); font-size: 0.92rem; text-wrap: pretty; }
+      .comment-statement { display: block; color: var(--ink-70); font-style: italic;
+        font-size: 0.85rem; margin-bottom: 4px; }
+      .comment-text { margin: 0; }
+
+      footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--ink-40);
+        font-size: 0.8rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+      .byline { color: var(--ink-40); font-size: 0.7rem; }
+      .hidden { display: none; }
+      @media print {
+        /* Force a light theme for print, regardless of system dark mode. */
+        :root {
+          --bg: #ffffff; --surface: #ffffff; --border: #cccccc;
+          --ink: #000000; --ink-70: #333333; --ink-40: #666666; --ink-20: #aaaaaa;
+        }
+        /* Print backgrounds and band colours faithfully. Some browsers strip
+           them by default; these hints force them through. */
+        *, *::before, *::after {
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+        @page { margin: 16mm 14mm 20mm; }
+        body { font-size: 10.5pt; line-height: 1.5; background: #fff; color: #000; }
+        .wrap { padding: 8mm 0 12mm; max-width: 100%; }
+        h1 { font-size: 22pt; margin: 0 0 6pt; }
+        h2 { font-size: 15pt; }
+        h3 { font-size: 12pt; }
+        .lede, .controls, .drop, .no-print, .tip { display: none !important; }
+        /* Overall card - compact, keep intact on one page if possible. */
+        .summary { margin: 6mm 0 8mm; padding: 6mm 6mm 5mm; break-inside: avoid;
+          page-break-inside: avoid; border: 1px solid #ccc; }
+        .summary h2 { font-size: 17pt; }
+        .summary .bar { height: 32px; }
+        .counts { margin: 0 0 4mm; font-size: 10pt; }
+        /* "Per question" divider - compact but clear. */
+        .section-head { margin: 8mm 0 3mm; }
+        .section-head h3 { font-size: 11pt; }
+        /* Per-question cards - avoid splitting across pages. */
+        .q { padding: 5mm 6mm 4mm; margin: 3mm 0; border: 1px solid #ccc;
+          break-inside: avoid; page-break-inside: avoid; }
+        .q-head { gap: 8mm; }
+        .kind { border-color: #999; color: #333; }
+        .q-n { margin: 2mm 0 3mm; }
+        .bar { height: 22px; }
+        .bar-tick { top: -14px; font-size: 8pt; }
+        .split { margin-top: 3mm; font-size: 9.5pt; }
+        .breakdown { margin-top: 2mm; font-size: 8.5pt; }
+        /* Comments: force open in print, hide the toggle, keep groups together. */
+        details.comments { display: block; margin-top: 4mm; padding-top: 3mm; }
+        details.comments > summary { display: none; }
+        details.comments > *:not(summary) { display: block; }
+        .comment-group { margin-top: 4mm; break-inside: avoid; page-break-inside: avoid; }
+        .comment-group:first-of-type { margin-top: 3mm; }
+        .comment-group-head { font-size: 8.5pt; margin-bottom: 2mm; color: #333; }
+        .comment-list li { color: #000; break-inside: avoid; page-break-inside: avoid;
+          font-size: 9.5pt; margin: 3mm 0; }
+        .comment-statement { color: #444; font-size: 9pt; }
+        /* Byline stays; the URL is nice as a footer. */
+        footer { margin-top: 8mm; padding-top: 3mm; font-size: 8.5pt; color: #666; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Actionable Experience Report</h1>
+      <p class="lede">Turn survey responses into the Below / Above the Bar picture. Everything runs
+        in your browser — nothing is uploaded.</p>
+
+      <div class="drop" id="drop">
+        <p><strong>Drop response files here</strong>, one per respondent.</p>
+        <p class="cap">Survey <code>.json</code> downloads, an LMS <code>.csv</code> export, or paste response links</p>
+        <div class="controls">
+          <button class="btn" id="pick" type="button">Choose files</button>
+          <button class="btn ghost" id="paste-toggle" type="button">Paste responses</button>
+          <button class="btn ghost" id="sample" type="button">Load sample data</button>
+          <button class="btn ghost no-print hidden" id="print" type="button">Print / save as PDF</button>
+        </div>
+        <input type="file" id="file" multiple accept=".json,.csv,application/json,text/csv" />
+      </div>
+
+      <details class="paste-panel" id="paste-panel">
+        <summary class="sr-only">Paste response data</summary>
+        <label for="paste-input" class="paste-label">
+          Paste one or more responses <span class="paste-hint">(response links, raw JSON, or base64 payloads &mdash; separate multiple by blank lines)</span>
+        </label>
+        <textarea id="paste-input" rows="6" placeholder="Paste response links or JSON here, one per respondent"></textarea>
+        <div class="paste-actions">
+          <button class="btn" id="paste-submit" type="button">Add to report</button>
+          <span class="paste-status" id="paste-status" aria-live="polite"></span>
+        </div>
+      </details>
+
+      <div id="report"></div>
+
+      <footer>
+        <span>AESurvey Studio <span class="byline">by Andy Rogers ©</span></span>
+        <span>andyrogers.design</span>
+      </footer>
+    </div>
+
+    <div id="tip" class="tip" role="tooltip" aria-hidden="true"></div>
+
+    <script src="aggregate.js"></script>
+    <script>
+      (function () {
+        var BAND_META = {
+          alarming: { label: 'Alarming', color: '#c8102e' },
+          concerning: { label: 'Concerning', color: '#f0b429' },
+          acceptable: { label: 'Acceptable', color: '#74a892' },
+          superior: { label: 'Superior', color: '#2d6a4f' },
+        }
+        // Embedded sample so "Load sample data" works anywhere (file:// or served).
+        var Q = [
+          { reference: 'prepared-to-apply', kind: 'opinion', prompt: 'How well has the workshop prepared you to give feedback in real situations?' },
+          { reference: 'example-relevance', kind: 'opinion', prompt: 'How well did the examples reflect the kind of conversations you actually have?' },
+          { reference: 'intended-use', kind: 'behaviour', prompt: 'Thinking about the next two weeks, what will you do differently?' },
+          { reference: 'approach-to-difficult', kind: 'behaviour', prompt: 'When you next need to give difficult feedback, how will you approach it?' },
+        ]
+        // The statement each band maps to, per question (matches the demo survey),
+        // so the tooltip can show what a respondent actually chose.
+        var STATEMENTS = {
+          'prepared-to-apply': {
+            alarming: 'I still wouldn\u2019t know where to start.',
+            concerning: 'I understand the theory, but I couldn\u2019t do it yet without help.',
+            acceptable: 'I could give useful feedback in most situations.',
+            superior: 'I feel ready to give clear, kind feedback in any situation.',
+          },
+          'example-relevance': {
+            alarming: 'None of them were relevant to my work.',
+            concerning: 'A few were relevant, but most were not.',
+            acceptable: 'Most examples matched situations I recognise.',
+            superior: 'The examples could have been taken straight from my week.',
+          },
+          'intended-use': {
+            alarming: 'Honestly, I don\u2019t expect to change anything.',
+            concerning: 'I might try one idea if the moment comes up.',
+            acceptable: 'I plan to use a couple of the techniques deliberately.',
+            superior: 'I\u2019ve already planned a specific conversation to apply this to.',
+          },
+          'approach-to-difficult': {
+            alarming: 'I\u2019ll avoid it, as I usually do.',
+            concerning: 'I\u2019ll push through it but expect it to go badly.',
+            acceptable: 'I\u2019ll use a structure from the workshop to keep it on track.',
+            superior: 'I\u2019ll plan it, use the structure, and follow up afterwards.',
+          },
+        }
+        // Twelve respondents with personas that carry through their four
+        // comments. Band distributions vary by question so each question tells
+        // a distinct story: Q1 balanced, Q2 strongly positive on relevance,
+        // Q3 leaning positive on intent, Q4 clearly negative on difficult
+        // conversations. Every response carries a comment.
+        var SAMPLE = [
+          // R1 — everyday competent
+          { bands: ['acceptable', 'superior', 'acceptable', 'concerning'],
+            comments: [
+              'The framework gave me something to hold on to.',
+              'The role-play with a real example really helped it land.',
+              'I\u2019ll try the situation-behaviour-impact bit in my next 1:1.',
+              'I still find the follow-up part hard to picture.',
+            ] },
+          // R2 — confident applier
+          { bands: ['superior', 'acceptable', 'superior', 'acceptable'],
+            comments: [
+              'This has genuinely shifted how I think about feedback conversations.',
+              'A few felt slightly too polished but I got the point.',
+              'I\u2019ve a difficult message to deliver on Friday and this was the prep I needed.',
+              'Having a structure takes the anxiety out of starting.',
+            ] },
+          // R3 — anxious learner
+          { bands: ['concerning', 'acceptable', 'concerning', 'alarming'],
+            comments: [
+              'I needed more time to practise before it stuck.',
+              'The peer-review scenario was closest to my day-to-day.',
+              'I\u2019ll see how the week goes before committing to anything specific.',
+              'Difficult conversations still make me anxious. This didn\u2019t change that much.',
+            ] },
+          // R4 — pragmatic
+          { bands: ['acceptable', 'acceptable', 'acceptable', 'concerning'],
+            comments: [
+              'I can see how to use most of it; the higher-stakes stuff will need more thought.',
+              'The customer-service scenarios were less useful for me, the peer ones worked.',
+              'Planning to try the observation-over-interpretation rule this week.',
+              'I\u2019ll push through it, but I don\u2019t expect it to feel natural yet.',
+            ] },
+          // R5 — overwhelmed
+          { bands: ['alarming', 'concerning', 'concerning', 'alarming'],
+            comments: [
+              'Honestly, a lot of it went over my head.',
+              'The scenarios felt aimed at managers, not individual contributors like me.',
+              'I might try the ask-before-advising idea if I remember.',
+              'I\u2019ll avoid the difficult one for as long as I can. Sorry.',
+            ] },
+          // R6 — champion
+          { bands: ['superior', 'superior', 'acceptable', 'acceptable'],
+            comments: [
+              'I feel much more confident going into my next round of quarterly reviews.',
+              'The examples felt like they\u2019d been written for my team.',
+              'Loved the two-week challenge \u2014 gives me a reason to start.',
+              'I\u2019ll book time to prepare rather than winging it.',
+            ] },
+          // R7 — mid, some blind spots
+          { bands: ['acceptable', 'concerning', 'superior', 'concerning'],
+            comments: [
+              'Ready for the everyday stuff, less sure about the sensitive ones.',
+              'The middle section felt a bit rushed and lost me for a while.',
+              'I\u2019ve drafted the message I want to have with my report on Monday.',
+              'I know what I should do, I\u2019m just not sure I\u2019ll actually do it.',
+            ] },
+          // R8 — cautious
+          { bands: ['concerning', 'acceptable', 'acceptable', 'superior'],
+            comments: [
+              'The theory is clear but I want to try it with a coach before I go solo.',
+              'Close enough. The tech-support example didn\u2019t land for me.',
+              'I\u2019ll be more deliberate about naming what I actually saw.',
+              'I\u2019ll plan it, use the structure, and follow up the week after.',
+            ] },
+          // R9 — sceptical of self, positive on the workshop
+          { bands: ['concerning', 'superior', 'concerning', 'concerning'],
+            comments: [
+              'I\u2019m not sure I trust myself with this yet.',
+              'The vendor-review example felt like a documentary about my week.',
+              'I\u2019ll try it once and see if it\u2019s worth doing again.',
+              'The tools help, but the person on the other side has to be willing too.',
+            ] },
+          // R10 — newly promoted, absorbing a lot
+          { bands: ['concerning', 'superior', 'acceptable', 'alarming'],
+            comments: [
+              'Just became a team lead, so lots to absorb, but I get the structure.',
+              'The new-manager-giving-first-feedback example was directly what I needed.',
+              'I\u2019ll use the framework in my one-to-ones next week.',
+              'I\u2019m dreading my first difficult conversation, honestly.',
+            ] },
+          // R11 — long-time practitioner, now has vocabulary
+          { bands: ['superior', 'acceptable', 'superior', 'acceptable'],
+            comments: [
+              'I\u2019ve been trying to do this for years and now I finally have the language.',
+              'Some scenarios felt aspirational rather than realistic for our team.',
+              'I\u2019ve picked one specific conversation to try the full framework on.',
+              'Not looking forward to it, but I know what to say now.',
+            ] },
+          // R12 — reluctant
+          { bands: ['alarming', 'concerning', 'alarming', 'alarming'],
+            comments: [
+              'The whole workshop felt aimed at people who love this stuff. I don\u2019t.',
+              'Nothing I saw looked like what my job actually involves.',
+              'I\u2019ll be honest, I don\u2019t expect to change anything.',
+              'I\u2019d rather avoid difficult conversations altogether.',
+            ] },
+        ]
+        function sampleFiles() {
+          return SAMPLE.map(function (row) {
+            return { responses: row.bands.map(function (b, i) {
+              return {
+                reference: Q[i].reference,
+                kind: Q[i].kind,
+                band: b,
+                prompt: Q[i].prompt,
+                statement: (STATEMENTS[Q[i].reference] || {})[b] || '',
+                comment: (row.comments && row.comments[i]) || '',
+              }
+            }) }
+          })
+        }
+        var drop = document.getElementById('drop')
+        var fileInput = document.getElementById('file')
+        var reportEl = document.getElementById('report')
+        var printBtn = document.getElementById('print')
+        var pastePanel = document.getElementById('paste-panel')
+        var pasteInput = document.getElementById('paste-input')
+        var pasteStatus = document.getElementById('paste-status')
+
+        // Session state: accumulate parsed responses across file drops, pastes,
+        // and the on-load #r= handler, so the report grows as more come in.
+        var accumulated = []
+        var accumulatedTitle = ''
+
+        function rerender() {
+          if (!accumulated.length) return
+          render(window.AESReport.aggregate(accumulated), accumulatedTitle || 'AES results')
+        }
+
+        function addFiles(parsedList, defaultTitle) {
+          for (var i = 0; i < parsedList.length; i++) {
+            if (parsedList[i] && parsedList[i].responses && parsedList[i].responses.length) {
+              accumulated.push(parsedList[i])
+            }
+          }
+          if (defaultTitle && !accumulatedTitle) accumulatedTitle = defaultTitle
+          rerender()
+        }
+
+        document.getElementById('pick').addEventListener('click', function () { fileInput.click() })
+        fileInput.addEventListener('change', function (e) { handleFiles(e.target.files) })
+        printBtn.addEventListener('click', function () { window.print() })
+        document.getElementById('paste-toggle').addEventListener('click', function () {
+          pastePanel.open = !pastePanel.open
+          if (pastePanel.open) setTimeout(function () { pasteInput.focus() }, 30)
+        })
+        document.getElementById('paste-submit').addEventListener('click', function () {
+          var text = pasteInput.value || ''
+          if (!text.trim()) { pasteStatus.textContent = 'Nothing to paste.'; return }
+          var parsed = window.AESReport.parsePaste(text)
+          var added = parsed.filter(function (p) { return p.responses && p.responses.length })
+          if (!added.length) {
+            pasteStatus.textContent = 'Couldn\u2019t read any responses from that paste.'
+            return
+          }
+          var titleMatch = /"title"\s*:\s*"([^"]+)"/.exec(text)
+          addFiles(added, titleMatch ? titleMatch[1] : '')
+          pasteStatus.textContent = 'Added ' + added.length + ' response' + (added.length === 1 ? '' : 's') + '.'
+          pasteInput.value = ''
+        })
+
+        // Before printing, open every comments accordion so the free text
+        // actually makes it into the PDF. Restore whatever the reader had
+        // open (or closed) afterwards, so the on-screen state isn't disturbed.
+        window.addEventListener('beforeprint', function () {
+          var opens = reportEl.querySelectorAll('details.comments')
+          for (var i = 0; i < opens.length; i++) {
+            opens[i].setAttribute('data-was-open', opens[i].open ? '1' : '0')
+            opens[i].open = true
+          }
+        })
+        window.addEventListener('afterprint', function () {
+          var opens = reportEl.querySelectorAll('details.comments')
+          for (var i = 0; i < opens.length; i++) {
+            opens[i].open = opens[i].getAttribute('data-was-open') === '1'
+            opens[i].removeAttribute('data-was-open')
+          }
+        })
+        document.getElementById('sample').addEventListener('click', function () {
+          accumulated = sampleFiles()
+          accumulatedTitle = 'Giving Effective Feedback \u2014 Experience Survey (sample data)'
+          rerender()
+        })
+
+        // A "#r=<base64>" in the URL means someone clicked a single-response
+        // link from a survey. Pre-load it into the report on first paint.
+        // (Leading semicolon prevents the previous statement from being read as
+        // a call on the parenthesised IIFE that follows.)
+        ;(function () {
+          var fromUrl = window.AESReport.extractResponseFromUrl(String(window.location.hash || ''))
+          if (fromUrl && fromUrl.responses) {
+            accumulated.push({ responses: fromUrl.responses })
+            if (fromUrl.title) accumulatedTitle = fromUrl.title
+            rerender()
+          }
+        })()
+        ;['dragenter', 'dragover'].forEach(function (ev) {
+          drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('over') })
+        })
+        ;['dragleave', 'drop'].forEach(function (ev) {
+          drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('over') })
+        })
+        drop.addEventListener('drop', function (e) {
+          if (e.dataTransfer && e.dataTransfer.files) handleFiles(e.dataTransfer.files)
+        })
+
+        function esc(s) {
+          return String(s == null ? '' : s).replace(/[&<>]/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]
+          })
+        }
+        // As esc(), plus double-quote — safe inside a double-quoted attribute.
+        function escAttr(s) {
+          return esc(s).replace(/"/g, '&quot;')
+        }
+
+        function handleFiles(list) {
+          var files = Array.prototype.slice.call(list)
+          if (!files.length) return
+          var parsed = []
+          var title = ''
+          var pending = files.length
+          files.forEach(function (file) {
+            var reader = new FileReader()
+            reader.onload = function () {
+              var text = String(reader.result || '')
+              try { var j = JSON.parse(text); if (j && j.title && !title) title = j.title } catch (e) {}
+              parsed.push(window.AESReport.parseResponseFile(text, file.name))
+              if (--pending === 0) addFiles(parsed, title)
+            }
+            reader.onerror = function () { if (--pending === 0) addFiles(parsed, title) }
+            reader.readAsText(file)
+          })
+        }
+
+        function render(rep, title) {
+          if (!rep.questions.length) {
+            reportEl.innerHTML = '<div class="summary"><p class="cap">No data</p>' +
+              '<h2>No responses found</h2><p class="counts">Those files didn\u2019t contain any AES survey ' +
+              'answers. Check they\u2019re the downloaded response files or an LMS interaction export.</p></div>'
+            printBtn.classList.add('hidden')
+            return
+          }
+          var h = '<div class="summary"><p class="cap">Overall</p><h2>' + esc(title || 'AES results') + '</h2>'
+          h += '<p class="counts tnum">' + rep.respondents + ' respondent' + (rep.respondents === 1 ? '' : 's') +
+            ' \u00b7 ' + rep.questionCount + ' question' + (rep.questionCount === 1 ? '' : 's') +
+            ' \u00b7 ' + rep.totalResponses + ' responses</p>'
+          h += bar(overallCounts(rep), rep.totalResponses, null, rep)
+          h += split(rep.overallBelowPct, rep.overallAbovePct)
+          h += legend() + '</div>'
+
+          h += '<div class="section-head"><h3>Per question</h3><hr /></div>'
+
+          rep.questions.forEach(function (q) {
+            h += '<div class="q"><div class="q-head"><h3 class="q-prompt">' + esc(q.prompt || q.reference) + '</h3>'
+            if (q.kind) h += '<span class="kind">' + esc(q.kind) + '</span>'
+            h += '</div><p class="q-n tnum">' + q.total + ' response' + (q.total === 1 ? '' : 's') +
+              ' \u00b7 ' + esc(q.reference) + '</p>'
+            h += bar(q.counts, q.total, q.statements)
+            h += split(q.belowPct, q.abovePct)
+            h += '<p class="breakdown tnum">' + rep.bands.map(function (b) {
+              return BAND_META[b].label + ' ' + q.pct[b] + '% (' + q.counts[b] + ')'
+            }).join(' \u00b7 ') + '</p>'
+            h += comments(q.comments)
+            h += '</div>'
+          })
+          reportEl.innerHTML = h
+          printBtn.classList.remove('hidden')
+        }
+
+        function split(below, above) {
+          return '<div class="split tnum"><span class="below"><b>Below the bar</b> ' + below +
+            '%</span><span class="above">' + above + '% <b>Above the bar</b></span></div>'
+        }
+
+        function overallCounts(rep) {
+          var c = { alarming: 0, concerning: 0, acceptable: 0, superior: 0 }
+          rep.questions.forEach(function (q) { rep.bands.forEach(function (b) { c[b] += q.counts[b] }) })
+          return c
+        }
+
+        // The picked statements for a band, sorted by pick count (desc). Only
+        // those actually chosen — reference-only statements (fromResponses:false)
+        // are excluded here; they live on the segment for tooltip display.
+        function pickedStatements(list) {
+          if (!list) return []
+          return list.filter(function (s) { return s.fromResponses && s.count > 0 })
+            .sort(function (a, b) { return b.count - a.count })
+        }
+
+        function bar(counts, total, statements, summaryContext) {
+          // The summary bar reads at a glance only — no statement or per-question
+          // detail. Statements + comments belong on the per-question bars.
+          var isSummary = !!summaryContext
+          var belowPct = total ? ((counts.alarming + counts.concerning) / total) * 100 : 0
+          var segs = ['alarming', 'concerning', 'acceptable', 'superior'].map(function (b) {
+            var w = total ? (counts[b] / total) * 100 : 0
+            if (!w) return ''
+            var pct = Math.round((counts[b] / total) * 100)
+            var picked = pickedStatements(statements && statements[b])
+            // The aria-label summarises picks. One statement: quote it. Two or
+            // more: "one of: A / B" (screen readers get honest ambiguity).
+            var aria = BAND_META[b].label + ': ' + counts[b] + ' of ' + total + ' (' + pct + '%)'
+            if (picked.length === 1) {
+              aria += ' \u2014 \u201c' + picked[0].text + '\u201d'
+            } else if (picked.length > 1) {
+              aria += ' \u2014 one of: ' + picked.map(function (s) { return '\u201c' + s.text + '\u201d' }).join(' / ')
+            }
+            // Statements payload for the tooltip (per-question bars only).
+            var payload = JSON.stringify(statements && statements[b] ? statements[b] : [])
+            return '<div class="seg" tabindex="0" role="img" style="width:' + w + '%;background:' + BAND_META[b].color +
+              '" aria-label="' + escAttr(aria) + '" data-band="' + b + '" data-count="' + counts[b] +
+              '" data-total="' + total + '" data-pct="' + pct + '"' +
+              ' data-statements="' + escAttr(payload) + '"' +
+              (isSummary ? ' data-summary="1"' : '') + '></div>'
+          }).join('')
+          return '<div class="bar-wrap"><div class="bar">' + segs + '</div>' +
+            (total ? '<div class="bar-line" style="left:' + belowPct + '%"></div>' +
+              '<div class="bar-tick" style="left:' + belowPct + '%">the bar</div>' : '') + '</div>'
+        }
+
+        function legend() {
+          return '<div class="legend">' + ['alarming', 'concerning', 'acceptable', 'superior'].map(function (b) {
+            return '<span><i class="swatch" style="background:' + BAND_META[b].color + '"></i>' + BAND_META[b].label + '</span>'
+          }).join('') + '</div>'
+        }
+
+        // A per-question free-text disclosure. Comments carry the respondent's
+        // band + statement, so each entry shows the context that produced it.
+        // Grouped by band (worst -> best) to make patterns easy to spot.
+        function comments(list) {
+          if (!list || !list.length) return ''
+          var byBand = { alarming: [], concerning: [], acceptable: [], superior: [] }
+          list.forEach(function (c) {
+            if (byBand[c.band]) byBand[c.band].push(c)
+            else (byBand.acceptable = byBand.acceptable || []).push(c) // safety net
+          })
+          var order = ['alarming', 'concerning', 'acceptable', 'superior']
+          var groups = order.filter(function (b) { return byBand[b].length }).map(function (b) {
+            var items = byBand[b].map(function (c) {
+              var st = c.statement
+                ? '<em class="comment-statement">\u201c' + esc(c.statement) + '\u201d</em>'
+                : ''
+              return '<li>' + st + '<p class="comment-text">' + esc(c.comment) + '</p></li>'
+            }).join('')
+            return '<div class="comment-group" data-band="' + b + '">' +
+              '<h4 class="comment-group-head"><i class="swatch" style="background:' +
+              BAND_META[b].color + '"></i>' + BAND_META[b].label + ' \u00b7 ' +
+              '<span class="tnum">' + byBand[b].length + '</span></h4>' +
+              '<ul class="comment-list">' + items + '</ul></div>'
+          }).join('')
+          var label = list.length + ' comment' + (list.length === 1 ? '' : 's')
+          return '<details class="comments"><summary>' + label + '</summary>' + groups + '</details>'
+        }
+
+        // --- Statement tooltip (hover + keyboard focus) -------------------
+        // A single tooltip element gets moved to whichever segment is active,
+        // rather than one tooltip per segment. Placement clamps to the viewport.
+        var tip = document.getElementById('tip')
+        function showTip(seg) {
+          var band = seg.getAttribute('data-band')
+          var meta = BAND_META[band]
+          if (!meta) return
+          var pct = seg.getAttribute('data-pct')
+          var count = seg.getAttribute('data-count')
+          var total = seg.getAttribute('data-total')
+          var isSummary = seg.getAttribute('data-summary') === '1'
+          var list = []
+          try { list = JSON.parse(seg.getAttribute('data-statements') || '[]') } catch (e) {}
+          // Split into what respondents actually picked, and any authored
+          // statements from the map that no one picked (shown greyed out).
+          var picked = list.filter(function (s) { return s.fromResponses && s.count > 0 })
+                            .sort(function (a, b) { return b.count - a.count })
+          var unused = list.filter(function (s) { return !s.fromResponses })
+          var stmtHtml
+          if (isSummary) {
+            // Overall bar: the tooltip is a headline read, nothing more.
+            // Statements and comments live on the per-question bars below.
+            stmtHtml = ''
+          } else if (picked.length === 1) {
+            stmtHtml = '<span class="tip-st">\u201c' + esc(picked[0].text) + '\u201d</span>'
+          } else if (picked.length > 1) {
+            stmtHtml = '<span class="tip-note">One of these statements was picked:</span>' +
+              '<ul class="tip-list">' + picked.map(function (s) {
+                return '<li>\u201c' + esc(s.text) + '\u201d <span class="tip-count tnum">\u00b7 ' +
+                  s.count + '&#x00d7;</span></li>'
+              }).join('') + '</ul>'
+          } else if (unused.length) {
+            stmtHtml = '<span class="tip-note">No respondent picked this band. Authored statement' +
+              (unused.length === 1 ? '' : 's') + ':</span>' +
+              '<ul class="tip-list">' + unused.map(function (s) {
+                return '<li>\u201c' + esc(s.text) + '\u201d</li>'
+              }).join('') + '</ul>'
+          } else {
+            stmtHtml = '<span class="tip-st">No statement text in these responses.</span>'
+          }
+          tip.innerHTML =
+            '<span class="tip-head"><i class="swatch" style="background:' + meta.color + '"></i>' + esc(meta.label) + '</span>' +
+            '<span class="tip-n tnum">' + count + ' of ' + total + ' \u00b7 ' + pct + '%</span>' + stmtHtml
+          tip.classList.add('show')
+          tip.setAttribute('aria-hidden', 'false')
+          var r = seg.getBoundingClientRect()
+          var x = r.left + r.width / 2
+          var y = r.top
+          // Clamp so the tooltip doesn't overflow the viewport horizontally.
+          var w = tip.offsetWidth
+          var minX = w / 2 + 8
+          var maxX = window.innerWidth - w / 2 - 8
+          if (x < minX) x = minX
+          if (x > maxX) x = maxX
+          tip.style.left = x + 'px'
+          tip.style.top = y + 'px'
+        }
+        function hideTip() {
+          tip.classList.remove('show')
+          tip.setAttribute('aria-hidden', 'true')
+        }
+        // Delegate: one set of listeners on #report handles every segment.
+        // 'mouseover'/'mouseout' (bubbling) instead of 'mouseenter' (which
+        // doesn't bubble); 'focusin'/'focusout' for keyboard users.
+        reportEl.addEventListener('mouseover', function (e) {
+          var seg = e.target && e.target.classList && e.target.classList.contains('seg') ? e.target : null
+          if (seg) showTip(seg)
+        })
+        reportEl.addEventListener('mouseout', function (e) {
+          if (e.target && e.target.classList && e.target.classList.contains('seg')) hideTip()
+        })
+        reportEl.addEventListener('focusin', function (e) {
+          if (e.target && e.target.classList && e.target.classList.contains('seg')) showTip(e.target)
+        })
+        reportEl.addEventListener('focusout', function (e) {
+          if (e.target && e.target.classList && e.target.classList.contains('seg')) hideTip()
+        })
+      })()
+    </script>
+  </body>
+</html>

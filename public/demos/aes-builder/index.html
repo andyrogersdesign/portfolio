@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0c0a09" media="(prefers-color-scheme: dark)" />
+    <title>AES Survey Builder</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #fafaf9; --surface: #f5f5f4; --border: #e7e5e4;
+        --ink: #1c1917; --ink-70: rgba(28, 25, 23, 0.7); --ink-40: rgba(28, 25, 23, 0.42);
+        --accent: #2d6a4f;
+        --alarming: #c8102e; --concerning: #f0b429; --acceptable: #74a892; --superior: #2d6a4f;
+        --font: "IBM Plex Sans", "Hanken Grotesk", "Barlow", "DM Sans", system-ui, sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0c0a09; --surface: #1c1917; --border: #292524;
+          --ink: #fafaf9; --ink-70: rgba(250, 250, 249, 0.7); --ink-40: rgba(250, 250, 249, 0.42);
+        }
+      }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font);
+        font-weight: 400; line-height: 1.65; -webkit-font-smoothing: antialiased; }
+      .wrap { max-width: 880px; margin: 0 auto; padding: 64px 24px 96px; }
+      @media (max-width: 640px) { .wrap { padding: 40px 16px 64px; } }
+      h1 { font-weight: 300; font-size: clamp(2rem, 5vw, 3.25rem); letter-spacing: -0.02em;
+        line-height: 1.05; margin: 0 0 12px; text-wrap: balance; }
+      h2 { font-weight: 300; font-size: 1.5rem; letter-spacing: -0.01em; line-height: 1.2; margin: 0 0 8px; }
+      h3 { font-weight: 500; font-size: 1rem; margin: 0 0 8px; }
+      .lede { color: var(--ink-70); max-width: 60ch; margin: 0 0 32px; font-size: 1.05rem; }
+      .cap { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink-40); margin: 0 0 8px; }
+      a { color: var(--accent); }
+
+      label { display: block; font-size: 0.85rem; color: var(--ink-70); margin: 0 0 6px; }
+      input[type="text"], input[type="email"], textarea, select {
+        width: 100%; padding: 10px 12px; background: var(--bg); color: var(--ink);
+        border: 1px solid var(--border); font: inherit; font-size: 0.95rem;
+      }
+      textarea { resize: vertical; min-height: 4em; line-height: 1.5; }
+      input:focus-visible, textarea:focus-visible, select:focus-visible, button:focus-visible {
+        outline: 2px solid var(--accent); outline-offset: 2px;
+      }
+      .field { margin: 0 0 16px; }
+      .fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+      @media (max-width: 640px) { .fields-row { grid-template-columns: 1fr; } }
+
+      button { font: inherit; cursor: pointer; }
+      .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
+        padding: 0 20px; background: var(--accent); color: #fafaf9; border: 1px solid var(--accent); font-weight: 500; }
+      .btn.ghost { background: transparent; color: var(--ink); border-color: var(--border); }
+      .btn.subtle { min-height: 36px; padding: 0 12px; background: transparent; color: var(--ink-70);
+        border: 1px solid var(--border); font-size: 0.85rem; }
+      .btn.danger { color: var(--alarming); border-color: transparent; background: transparent; padding: 4px 8px; min-height: unset; }
+      .btn.danger:hover { text-decoration: underline; }
+
+      .card { border: 1px solid var(--border); background: var(--surface); padding: 24px; margin: 16px 0; }
+      .card-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 0 0 12px; }
+      .card-title { font-weight: 500; font-size: 1rem; }
+      .card-actions { display: flex; gap: 8px; }
+      .statement { display: grid; grid-template-columns: 1fr 140px auto; gap: 8px; align-items: center; margin: 0 0 8px; }
+      @media (max-width: 640px) { .statement { grid-template-columns: 1fr; } }
+      .statement select { min-width: 140px; }
+
+      .actions-bar { position: sticky; bottom: 0; background: var(--bg); padding: 16px 0; margin-top: 24px;
+        display: flex; flex-wrap: wrap; gap: 12px; align-items: center; border-top: 1px solid var(--border); }
+      .status { color: var(--ink-70); font-size: 0.85rem; }
+      .status.ok { color: var(--accent); }
+      .status.err { color: var(--alarming); }
+
+      details.help { background: var(--surface); border: 1px solid var(--border); padding: 12px 16px; margin: 12px 0; }
+      details.help summary { cursor: pointer; font-weight: 500; }
+      details.help > *:not(summary) { margin-top: 8px; }
+
+      footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--border); color: var(--ink-40);
+        font-size: 0.8rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+      .byline { color: var(--ink-40); font-size: 0.7rem; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>AES Survey Builder</h1>
+      <p class="lede">
+        Build an Actionable Experience Survey and share it as a link &mdash; respondents open the link, take the
+        survey in their browser, and send you their responses. Nothing goes through a server; everything runs
+        locally on your machine and theirs.
+      </p>
+
+      <details class="help">
+        <summary>How this works</summary>
+        <p>Fill in the form below and click <strong>Copy shareable link</strong>. The link contains your whole
+        survey encoded in the URL &mdash; there&rsquo;s no server or database. Send it to your respondents. When
+        they finish, they can email their responses back to you, or copy a response link for you to paste into
+        the <a href="../aes-report/index.html">AES report analyser</a>.</p>
+        <p>For an LMS deployment, use the <a href="/demos">SCORM package</a> instead &mdash; same method,
+        different delivery.</p>
+      </details>
+
+      <section>
+        <h2>Survey basics</h2>
+        <div class="field">
+          <label for="title">Title</label>
+          <input type="text" id="title" placeholder="e.g. Giving Effective Feedback &mdash; Experience Survey" />
+        </div>
+        <div class="field">
+          <label for="description">Introduction (optional)</label>
+          <textarea id="description" rows="2" placeholder="A short line respondents see before the first question."></textarea>
+        </div>
+        <div class="fields-row">
+          <div class="field">
+            <label for="author-name">Your name</label>
+            <input type="text" id="author-name" placeholder="e.g. Andy" />
+          </div>
+          <div class="field">
+            <label for="author-email">Your email (for responses)</label>
+            <input type="email" id="author-email" placeholder="e.g. you@example.com" />
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2 style="margin-top:24px">Questions</h2>
+        <p class="cap">Each question has an unbiased prompt and four or more statements, each tagged to a band.</p>
+        <div id="questions"></div>
+        <button class="btn subtle" id="add-question" type="button">+ Add question</button>
+      </section>
+
+      <div class="actions-bar">
+        <button class="btn" id="copy-link" type="button">Copy shareable link</button>
+        <button class="btn ghost" id="preview" type="button">Preview in new tab</button>
+        <button class="btn ghost" id="copy-config" type="button">Copy config (JSON)</button>
+        <button class="btn ghost" id="load-demo" type="button">Load demo</button>
+        <button class="btn ghost" id="reset" type="button">Reset</button>
+        <span class="status" id="status" aria-live="polite"></span>
+      </div>
+
+      <footer>
+        <span>AESurvey Studio <span class="byline">by Andy Rogers &copy;</span></span>
+        <span>andyrogers.design</span>
+      </footer>
+    </div>
+    <script src="builder.js"></script>
+  </body>
+</html>

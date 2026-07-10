@@ -1,0 +1,542 @@
+/* Player styles. Responsive by design: an LMS renders SCORM in an iframe, so the
+   content must reflow cleanly on small screens.
+
+   Design: the Swiss International Style system (IBM Plex Sans, stone palette, a
+   single Forest-green accent used sparingly, opacity for hierarchy, rectilinear
+   forms, generous whitespace). Functional AES/feedback colours (red / amber /
+   green) sit outside the palette on purpose, so meaning reads instantly. */
+
+:root {
+  color-scheme: light dark;
+  --paper: #fafaf9;        /* stone-50 */
+  --white: #fafaf9;        /* stone-50 (Swiss avoids pure white) */
+  --off-white: #f5f5f4;    /* stone-100 surface */
+
+  --ink: #1c1917;          /* stone-900 */
+  --ink-soft: rgba(28, 25, 23, 0.7);   /* hierarchy via opacity, not a second hue */
+  --accent: #2d6a4f;       /* Forest: the single accent */
+  --accent-ink: #fafaf9;   /* text on an accent fill */
+  --accent-soft: rgba(45, 106, 79, 0.1);
+  --border: #e7e5e4;       /* stone-200 */
+
+  --font-body: "IBM Plex Sans", "Hanken Grotesk", "Barlow", "DM Sans", system-ui, sans-serif;
+  --font-display: var(--font-body);
+
+  /* Functional feedback colours (green = correct, red = incorrect, amber = warn). */
+  --ok-bg: #e7f3ec;  --ok-ink: #1f6b41;
+  --bad-bg: #fbecec; --bad-ink: #9d2f2f;
+  --warn-bg: #fdf3e2; --warn-ink: #8a5a13;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #0c0a09;      /* stone-950 */
+    --white: #1c1917;      /* stone-900 surfaces */
+    --off-white: #1c1917;
+    --ink: #fafaf9;        /* stone-50 */
+    --ink-soft: rgba(250, 250, 249, 0.7);
+    --accent: #4c9e7f;     /* lighter Forest for dark backgrounds */
+    --accent-ink: #0c0a09;
+    --accent-soft: rgba(76, 158, 127, 0.16);
+    --border: #292524;     /* stone-800 */
+    --ok-bg: rgba(31, 107, 65, 0.22);  --ok-ink: #86d3a4;
+    --bad-bg: rgba(157, 47, 47, 0.24); --bad-ink: #ec9a9a;
+    --warn-bg: rgba(138, 90, 19, 0.24); --warn-ink: #e6bd7a;
+  }
+}
+
+* { box-sizing: border-box; }
+
+/* Visible keyboard focus, using the Forest accent so the whole system (player
+   and analyser) shares one focus colour. Falls back to ink in reduced-contrast
+   modes since accent has enough saturation to read on both light and dark. */
+a:focus-visible, button:focus-visible, input:focus-visible,
+textarea:focus-visible, [tabindex]:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-body);
+  line-height: 1.6;
+}
+
+/* Swiss headings are light, never bold; emphasis elsewhere is medium (500). */
+h1, h2, h3 { font-weight: 300; letter-spacing: -0.01em; text-wrap: balance; }
+.results-score { font-weight: 300; }
+
+.course {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem 4.5rem;
+}
+
+/* Brand mark + course title */
+.course-brand { margin: 0 0 1.25rem; }
+.course-logo { height: 28px; width: auto; display: block; }
+.course-header h1 { font-family: var(--font-display); font-size: 1.7rem; line-height: 1.15; letter-spacing: -0.02em; margin: 0 0 1.5rem; }
+.course-intro { font-size: 1.02rem; color: var(--ink-soft); margin: -1rem 0 1.5rem; max-width: 60ch; }
+
+.lesson { margin-bottom: 2.5rem; }
+.lesson > h2 { font-family: var(--font-display); font-size: 1.3rem; line-height: 1.2; margin: 0 0 1.1rem; }
+
+/* Gentle entrance when a lesson becomes active (neutralised under reduced-motion). */
+@keyframes lessonEnter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.lesson-enter { animation: lessonEnter 280ms cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+
+.block { margin: 0 0 1.75rem; }
+.block-text h2 { font-family: var(--font-display); font-size: 1.2rem; }
+.block-image img,
+.block-video video { width: 100%; height: auto; border-radius: 0; display: block; }
+figure { margin: 0; }
+figcaption { font-size: 0.85rem; color: var(--ink-soft); margin-top: 0.4rem; }
+
+/* Accordion */
+.accordion-item { border: 1px solid var(--border); border-radius: 0; margin-bottom: 0.6rem; overflow: hidden; }
+.accordion-head {
+  width: 100%; text-align: left; background: var(--off-white); border: 0; padding: 0.95rem 1.1rem;
+  font-size: 1rem; font-weight: 500; cursor: pointer; color: var(--ink);
+}
+.accordion-head:hover { background: #efeae1; }
+.accordion-head.open { background: var(--accent-soft); }
+.accordion-body { padding: 0.5rem 1.1rem 1.1rem; }
+
+/* Tabs */
+.tab-bar { display: flex; gap: 0.25rem; flex-wrap: wrap; border-bottom: 2px solid var(--border); }
+.tab-btn {
+  background: transparent; border: 0; padding: 0.6rem 0.9rem; cursor: pointer; color: var(--ink);
+  font-size: 0.95rem; border-bottom: 2px solid transparent; margin-bottom: -2px;
+}
+.tab-btn.active { border-bottom-color: var(--accent); font-weight: 500; }
+.tab-panel { padding: 1rem 0; }
+
+/* Knowledge check */
+.block-kc {
+  background: var(--off-white); border: 1px solid var(--border); border-radius: 0; padding: 1.5rem 1.75rem;
+}
+.kc-prompt { font-weight: 500; margin: 0 0 1.1rem; }
+.kc-hint { font-size: 0.88rem; color: var(--ink-soft); margin: -0.7rem 0 0.95rem; }
+.kc-fill-input {
+  width: 100%; background: var(--white); border: 1px solid #d8d3ca; border-radius: 0;
+  padding: 0.7rem 0.85rem; font-size: 1rem; margin-bottom: 0.5rem; font-family: inherit;
+}
+.kc-fill-input:disabled { background: #f0ede7; color: var(--ink-soft); }
+.kc-choice {
+  display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.75rem 0.9rem;
+  background: var(--white); border: 1px solid var(--border); border-radius: 0; margin-bottom: 0.6rem; cursor: pointer;
+}
+.kc-choice:hover { background: #f5f1ea; }
+.kc-choice input { margin-top: 0.3rem; }
+.kc-submit {
+  margin-top: 0.6rem; background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 0;
+  padding: 0.65rem 1.2rem; font-size: 0.95rem; font-weight: 500; cursor: pointer;
+}
+.kc-submit:disabled { opacity: 0.55; cursor: default; }
+.kc-feedback { margin-top: 0.95rem; padding: 0.85rem 1.1rem; border-radius: 0; font-size: 0.95rem; }
+.kc-feedback.correct { background: var(--ok-bg); color: var(--ok-ink); }
+.kc-feedback.incorrect { background: var(--bad-bg); color: var(--bad-ink); }
+.kc-feedback.warn { background: var(--warn-bg); color: var(--warn-ink); }
+
+/* Finish */
+.course-footer { margin-top: 2.5rem; border-top: 1px solid var(--border); padding-top: 1.5rem; }
+.finish-btn {
+  background: var(--ink); color: var(--white); border: 0; border-radius: 0;
+  padding: 0.8rem 1.35rem; font-size: 1rem; font-weight: 500; cursor: pointer;
+}
+.finish-btn:disabled { opacity: 0.55; cursor: default; }
+.finish-result { margin-top: 1.1rem; padding: 0.85rem 1.1rem; border-radius: 0; font-weight: 600; }
+.finish-result.correct { background: var(--ok-bg); color: var(--ok-ink); }
+.finish-result.incorrect { background: var(--bad-bg); color: var(--bad-ink); }
+
+@media (max-width: 520px) {
+  .course { padding: 1rem 0.9rem 3rem; }
+  .course-header h1 { font-size: 1.4rem; }
+}
+
+/* Lesson navigation (multi-lesson courses) */
+.course-contents {
+  display: flex; flex-wrap: wrap; gap: 0.5rem;
+  margin: 0 0 2rem; padding-bottom: 1.25rem; border-bottom: 1px solid var(--border);
+}
+.contents-item {
+  background: var(--off-white); border: 1px solid var(--border); border-radius: 0;
+  padding: 0.4rem 0.95rem; font-size: 0.88rem; cursor: pointer; color: var(--ink);
+}
+.contents-item:hover { background: #efeae1; }
+.contents-item.active { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 500; }
+
+.lesson-progress { font-size: 0.85rem; color: var(--ink-soft); margin-bottom: 0.85rem; }
+
+.nav-controls { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+.nav-btn {
+  background: var(--off-white); border: 1px solid #d8d3ca; border-radius: 0;
+  padding: 0.65rem 1.1rem; font-size: 0.95rem; cursor: pointer; color: var(--ink);
+}
+.nav-btn:hover { background: #efeae1; }
+.nav-btn.next { border-color: var(--accent); color: var(--ink); font-weight: 500; }
+
+/* --- New engaging blocks ------------------------------------------------- */
+
+/* Callout: a non-skimmable emphasis panel. Three styles. */
+.block-callout {
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--ink-soft);
+  border-radius: 0;
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+  background: var(--white);
+}
+.block-callout > :first-child { margin-top: 0; }
+.block-callout > :last-child { margin-bottom: 0; }
+.block-callout.callout-info { border-left-color: var(--ink-soft); background: var(--off-white); }
+.block-callout.callout-warning { border-left-color: var(--warn-ink); background: var(--warn-bg); }
+.block-callout.callout-key { border-left-color: var(--accent); background: var(--accent-soft); }
+
+/* Flashcards: tap-to-flip cards laid out in a responsive row. */
+.block-flashcards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+.flashcard {
+  flex: 1 1 220px;
+  min-height: 96px;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: var(--white);
+  padding: 1rem;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.flashcard:hover { border-color: var(--accent); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.flashcard.flipped { background: var(--off-white); border-color: var(--ink-soft); }
+.flashcard-front { font-family: var(--font-display); font-weight: 500; }
+.flashcard-front::after { content: " ↻"; color: var(--ink-soft); font-weight: 400; }
+
+/* Sorting: each item gets a category select; feedback marks right/wrong. */
+.block-sorting { margin: 1.25rem 0; }
+.sorting-prompt { font-weight: 500; }
+.sorting-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--border);
+}
+.sorting-item { flex: 1 1 auto; }
+.sorting-select { flex: 0 0 auto; padding: 0.35rem 0.5rem; border: 1px solid var(--border); border-radius: 0; }
+.sorting-mark { flex: 0 0 1.5rem; text-align: center; font-weight: 500; }
+.sorting-mark.right { color: var(--ok-ink); }
+.sorting-mark.wrong { color: var(--bad-ink); }
+
+/* Scenario: choices as buttons; the picked one reveals an outcome. */
+.block-scenario { margin: 1.25rem 0; }
+.scenario-setup { font-weight: 500; }
+.scenario-choices { display: flex; flex-direction: column; gap: 0.5rem; }
+.scenario-choice {
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: var(--white);
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+.scenario-choice:hover { border-color: var(--accent); }
+.scenario-choice.chosen { border-color: var(--accent); background: var(--accent-soft); font-weight: 500; }
+.scenario-outcome {
+  margin-top: 0.75rem;
+  padding: 0.85rem 1.1rem;
+  border-radius: 0;
+  background: var(--off-white);
+  border: 1px solid var(--border);
+}
+
+/* Survey (AES): ungraded single-select with a thank-you on submit. */
+.block-survey { margin: 1.25rem 0; }
+.survey-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.5rem 0.25rem;
+  cursor: pointer;
+}
+.survey-option input { margin-top: 0.25rem; }
+.survey-comment { margin: 1rem 0 0.25rem; }
+.survey-comment-label {
+  display: block; font-size: 0.85rem; color: var(--ink-soft); margin-bottom: 0.4rem;
+}
+.survey-comment-input {
+  width: 100%; background: var(--white); border: 1px solid #d8d3ca; border-radius: 0;
+  padding: 0.7rem 0.85rem; font-size: 1rem; font-family: inherit; line-height: 1.5; resize: vertical;
+}
+
+/* --- Screen-reader-only (visually hidden, still announced) --------------- */
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
+}
+
+/* --- Resume banner ------------------------------------------------------- */
+.resume-banner {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem;
+  background: var(--off-white); border: 1px solid var(--border);
+  border-left: 4px solid var(--accent); border-radius: 0;
+  padding: 0.85rem 1.1rem; margin: 0 0 1.75rem;
+}
+.resume-msg { flex: 1 1 12rem; font-weight: 500; }
+.resume-btn {
+  background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 0;
+  padding: 0.5rem 1rem; font-weight: 500; cursor: pointer;
+}
+.resume-over {
+  background: transparent; border: 1px solid #d8d3ca; border-radius: 0;
+  padding: 0.5rem 1rem; cursor: pointer; color: var(--ink);
+}
+.resume-over:hover { background: #efeae1; }
+
+/* --- Results view (the centrepiece) -------------------------------------- */
+.results {
+  max-width: 560px; margin: 1rem auto 0; text-align: center; padding: 1.5rem 1rem 2rem;
+  animation: lessonEnter 320ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+.results-status {
+  font-family: var(--font-display); font-size: 1.5rem; margin: 0 0 0.5rem; outline: none;
+}
+.results-pass .results-status { color: var(--ok-ink); }
+.results-pass .results-status::before { content: "\2713  "; }
+.results-score {
+  font-family: var(--font-display); font-weight: 500; font-size: 3.25rem;
+  line-height: 1; letter-spacing: -0.02em; margin: 0.25rem 0;
+}
+.results-sub { color: var(--ink-soft); margin: 0 0 1.5rem; }
+.results-revisit-head {
+  font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em;
+  color: var(--ink-soft); text-align: left; margin: 1.5rem 0 0.6rem;
+}
+.results-revisit { text-align: left; display: flex; flex-direction: column; gap: 0.6rem; }
+.results-item {
+  border: 1px solid var(--border); border-left: 3px solid var(--accent);
+  border-radius: 0; padding: 0.75rem 1rem; background: var(--white);
+}
+.results-item-q { font-weight: 500; margin: 0 0 0.25rem; }
+.results-item-fb { color: var(--ink-soft); margin: 0; font-size: 0.95rem; }
+.results-guidance { color: var(--ink-soft); margin: 1.75rem 0 0; }
+.results-download { margin-top: 1.5rem; }
+
+/* Response summary: shown on the results screen and printed to PDF. Each
+   item is tagged with its band so a small coloured dot precedes the label. */
+.results-summary { text-align: left; margin: 2rem 0 0.5rem; }
+.results-summary-head {
+  font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--ink-soft); font-weight: 500; margin: 0 0 0.4rem;
+}
+.results-summary-meta { font-size: 0.85rem; color: var(--ink-soft); margin: 0 0 1.25rem; }
+.results-summary-list { list-style: none; padding: 0; margin: 0; }
+.results-summary-item {
+  border: 1px solid var(--border); border-left: 3px solid var(--ink-soft);
+  padding: 0.85rem 1.1rem; margin: 0 0 0.75rem; background: var(--white);
+}
+.results-summary-item[data-band="alarming"] { border-left-color: #c8102e; }
+.results-summary-item[data-band="concerning"] { border-left-color: #f0b429; }
+.results-summary-item[data-band="acceptable"] { border-left-color: #74a892; }
+.results-summary-item[data-band="superior"] { border-left-color: #2d6a4f; }
+.results-summary-q { font-weight: 500; margin: 0 0 0.4rem; text-wrap: pretty; }
+.results-summary-choice { margin: 0 0 0.35rem; font-size: 0.95rem; }
+.results-summary-band {
+  display: inline-block; font-size: 0.72rem; text-transform: uppercase;
+  letter-spacing: 0.06em; font-weight: 500; padding: 0.1rem 0.5rem;
+  border: 1px solid var(--border);
+}
+.results-summary-item[data-band="alarming"] .results-summary-band { color: #c8102e; }
+.results-summary-item[data-band="concerning"] .results-summary-band { color: #8a5a13; }
+.results-summary-item[data-band="acceptable"] .results-summary-band { color: #2d6a4f; }
+.results-summary-item[data-band="superior"] .results-summary-band { color: #2d6a4f; }
+.results-summary-statement { color: var(--ink); font-style: italic; }
+.results-summary-comment {
+  margin: 0.45rem 0 0; font-size: 0.9rem; color: var(--ink);
+  padding-top: 0.35rem; border-top: 1px dashed var(--border);
+}
+.results-summary-comment-label { color: var(--ink-soft); font-weight: 500; }
+
+/* Two-action bar: primary Save-as-PDF, secondary JSON download. */
+.results-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center; margin: 1.75rem 0 0.5rem; }
+.results-json, .results-copy {
+  background: transparent; color: var(--ink); border: 1px solid var(--border); border-radius: 0;
+  padding: 0.6rem 1.15rem; font-size: 0.9rem; cursor: pointer; font-family: inherit;
+}
+.results-json:hover, .results-copy:hover { border-color: var(--accent); color: var(--accent); }
+.results-send {
+  background: var(--accent); color: var(--accent-ink); border: 1px solid var(--accent); border-radius: 0;
+  padding: 0.6rem 1.15rem; font-size: 0.95rem; font-weight: 500; cursor: pointer; font-family: inherit;
+}
+
+/* "No survey loaded" state (shareable-link flow when the hash is missing). */
+.no-survey { text-align: center; padding: 3rem 1.5rem; max-width: 40rem; margin: 3rem auto; }
+.no-survey h1 { margin: 0 0 0.75rem; font-size: 1.6rem; }
+.no-survey p { color: var(--ink-soft); }
+
+.results-byline {
+  text-align: center; font-size: 0.72rem; color: var(--ink-soft); margin-top: 2.5rem;
+  letter-spacing: 0.01em;
+}
+
+/* --- Print / PDF layout for the survey results ---------------------------
+   Triggered by the "Save results as PDF" button (window.print()). Everything
+   except the results panel is hidden; the summary prints edge-to-edge on white.
+*/
+@media print {
+  :root {
+    --paper: #ffffff; --white: #ffffff; --off-white: #ffffff;
+    --ink: #000000; --ink-soft: #333333; --border: #cccccc;
+  }
+  *, *::before, *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  @page { margin: 16mm 14mm 20mm; }
+  body { background: #ffffff; color: #000; font-size: 10.5pt; }
+  .course-brand, .course-header .course-intro, .course-contents, .lessons,
+  .course-footer, .resume-banner, .results-actions, .results-guidance {
+    display: none !important;
+  }
+  .course { max-width: 100%; padding: 0; }
+  .course-header h1 { font-size: 20pt; margin: 0 0 6pt; }
+  .results { text-align: left; padding: 0; margin: 0; max-width: 100%;
+    animation: none; }
+  .results-status { font-size: 14pt; margin: 0 0 4pt; outline: none !important; }
+  .results-score { font-size: 22pt; margin: 4pt 0; }
+  .results-sub { font-size: 10pt; margin: 0 0 4mm; }
+  .results-summary { margin: 6mm 0 0; }
+  .results-summary-head { font-size: 8.5pt; }
+  .results-summary-meta { font-size: 9pt; margin: 0 0 3mm; }
+  .results-summary-item { break-inside: avoid; page-break-inside: avoid;
+    padding: 3mm 4mm; margin: 0 0 2mm; background: #fff; }
+  .results-summary-q { font-size: 10pt; }
+  .results-summary-choice { font-size: 9.5pt; }
+  .results-summary-comment { font-size: 9pt; }
+  .results-byline { margin-top: 8mm; font-size: 8pt; color: #666; }
+}
+
+/* --- Phase 2: inclusivity (WCAG 2.1 AA) ---------------------------------- */
+
+/* Choice & survey option groups are a <fieldset> with the prompt as <legend>,
+   so assistive tech announces the question with each option. Reset the default
+   fieldset chrome so it looks exactly as before. */
+.kc-fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.kc-fieldset > .kc-prompt { display: block; width: 100%; padding: 0; }
+
+/* Video transcript: a collapsible text alternative beneath the video. */
+.video-transcript { margin-top: 0.75rem; border-top: 1px solid var(--border); padding-top: 0.5rem; }
+.video-transcript > summary { cursor: pointer; font-weight: 500; color: var(--ink); padding: 0.35rem 0; }
+.video-transcript > summary:hover { color: var(--accent-ink); }
+.video-transcript-body { padding: 0.35rem 0 0; }
+.video-transcript-body > :first-child { margin-top: 0; }
+.video-transcript-body > :last-child { margin-bottom: 0; }
+
+/* In-block markdown headings are demoted one level (## -> h3) so the lesson
+   <h2> stays the section head. Style the demoted levels for a sensible scale. */
+.block-text h3 { font-family: var(--font-display); font-size: 1.08rem; line-height: 1.25; margin: 1.4rem 0 0.5rem; }
+.block-text h4 { font-family: var(--font-display); font-size: 0.98rem; line-height: 1.25; margin: 1.2rem 0 0.4rem; }
+.block-text h5, .block-text h6 { font-family: var(--font-display); font-size: 0.92rem; margin: 1rem 0 0.35rem; }
+
+/* --- Phase 3: polish & delight ------------------------------------------- */
+
+/* Progress bar (footer) + visited contents pills. The bar only grows as new
+   lessons are seen; reduced-motion neutralises the width transition globally. */
+.progress-track {
+  height: 4px; background: var(--border); border-radius: 0;
+  overflow: hidden; margin: 0 0 0.95rem;
+}
+.progress-fill {
+  height: 100%; width: 0; background: var(--accent); border-radius: 0;
+  transition: width 260ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+/* Seen-but-not-current pills get a soft tint; the current pill stays solid. */
+.contents-item.visited:not(.active) { background: var(--accent-soft); border-color: #cfe0da; }
+
+/* Flashcards: a real 3D flip. The button becomes the perspective container and
+   the faces sit back-to-back; the inner wrapper rotates on .flipped. */
+.flashcard { perspective: 1000px; background: transparent; border: 0; padding: 0; min-height: 150px; box-shadow: none; }
+.flashcard:hover { box-shadow: none; }
+.flashcard:hover .flashcard-face { border-color: var(--accent); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
+.flashcard.flipped { background: transparent; }
+.flashcard-inner {
+  position: relative; width: 100%; min-height: 150px; height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 520ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+.flashcard.flipped .flashcard-inner { transform: rotateY(180deg); }
+.flashcard-face {
+  position: absolute; inset: 0; -webkit-backface-visibility: hidden; backface-visibility: hidden;
+  display: flex; flex-direction: column; justify-content: center; text-align: left;
+  border: 1px solid var(--border); border-radius: 0; background: var(--white);
+  padding: 1rem; overflow: auto;
+}
+.flashcard-back { transform: rotateY(180deg); background: var(--off-white); border-color: var(--ink-soft); }
+
+/* Scenario: fade/slide the outcome in each time a choice is picked. */
+.scenario-outcome.reveal { animation: outcomeReveal 320ms cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+@keyframes outcomeReveal {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Image zoom trigger + lightbox overlay. */
+.image-zoom { display: block; width: 100%; padding: 0; border: 0; background: transparent; cursor: zoom-in; border-radius: 0; }
+.image-zoom img { display: block; width: 100%; height: auto; border-radius: 0; }
+.lightbox {
+  position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center;
+  background: rgba(26, 26, 26, 0.86); padding: 2rem; cursor: zoom-out;
+}
+.lightbox-img { max-width: 92vw; max-height: 88vh; width: auto; height: auto; border-radius: 0; cursor: default; }
+.lightbox-close {
+  position: absolute; top: 1rem; right: 1rem; width: 2.5rem; height: 2.5rem; border-radius: 0;
+  border: 0; background: rgba(255, 255, 255, 0.16); color: #fff; font-size: 1.6rem; line-height: 1; cursor: pointer;
+}
+.lightbox-close:hover { background: rgba(255, 255, 255, 0.3); }
+
+/* --- Enhancements: lightbox motion + scored/practice tags ---------------- */
+
+/* Gentle fade/scale on the lightbox open and close. The global reduced-motion
+   guard collapses these to instant. */
+.lightbox { animation: lightboxIn 200ms ease both; }
+.lightbox-img { animation: lightboxImgIn 260ms cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+.lightbox.closing { animation: lightboxOut 200ms ease both; pointer-events: none; }
+.lightbox.closing .lightbox-img { animation: lightboxImgOut 180ms ease both; }
+@keyframes lightboxIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes lightboxOut { from { opacity: 1; } to { opacity: 0; } }
+@keyframes lightboxImgIn { from { opacity: 0; transform: scale(0.94); } to { opacity: 1; transform: none; } }
+@keyframes lightboxImgOut { from { opacity: 1; transform: none; } to { opacity: 0; transform: scale(0.96); } }
+
+/* Scored vs practice: a clear, colour-coded tag at the top of a question. */
+.kc-tag-row { margin: 0 0 0.95rem; }
+.kc-tag {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  font-size: 0.78rem; font-weight: 500; padding: 0.22rem 0.65rem; border-radius: 0;
+}
+.kc-tag::before { content: ""; width: 0.5rem; height: 0.5rem; border-radius: 0; background: currentColor; }
+.kc-tag.scored { background: var(--accent-soft); color: var(--accent); }
+.kc-tag.practice { background: #eef1f4; color: #45526b; }
+/* A matching hairline down the left edge reinforces the state at a glance. */
+.block-kc.kc-scored { border-left: 3px solid var(--accent); }
+.block-kc.kc-practice { border-left: 3px solid #c7d0db; }
