@@ -22,6 +22,11 @@
   // auto-serve directory index files) and static hosting (Netlify etc.).
   var TAKE_PATH = '../aes-survey/index.html'
 
+  // A URL fragment above this length starts to bump into email-client and
+  // messenger limits. Warn at this point; the survey still works, but the
+  // author should know before sending it out.
+  var URL_WARN_LENGTH = 6000
+
   // Model — kept as a plain JS object we mutate as inputs change. On any
   // "action" (copy link, preview, etc.) we serialise this to JSON.
   var state = emptyState()
@@ -44,6 +49,21 @@
       comment: true,
       statements: BANDS.map(function (b) { return { text: '', band: b.value } }),
     }
+  }
+
+  // ---- Base64 / UTF-8 helpers (modern, non-deprecated) ---------------------
+
+  // Encode a UTF-8 string to base64. Supports the full Unicode range without
+  // relying on the deprecated escape/unescape pair. TextEncoder is supported
+  // in every modern browser and in Node 12+.
+  function utf8ToBase64(str) {
+    if (typeof TextEncoder !== 'undefined') {
+      var bytes = new TextEncoder().encode(str)
+      var bin = ''
+      for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i])
+      return btoa(bin)
+    }
+    return btoa(unescape(encodeURIComponent(str)))
   }
 
   // ---- DOM helpers -------------------------------------------------------
@@ -76,27 +96,29 @@
   }
 
   function renderQuestion(q, qi) {
-    var card = el('div', { class: 'card' })
-
-    // Card header: question number + delete
-    var head = el('div', { class: 'card-head' })
-    head.appendChild(el('div', { class: 'card-title', text: 'Question ' + (qi + 1) }))
-    var del = el('button', { class: 'btn danger', type: 'button', text: 'Remove question' })
-    del.addEventListener('click', function () {
-      if (confirm('Remove this question?')) {
-        state.questions.splice(qi, 1)
-        render()
-        status('Question removed.')
-      }
+    var titleId = 'q' + qi + '-title'
+    // role="group" + aria-labelledby lets a screen reader announce which
+    // question the reader is inside, so a long form doesn't feel like an
+    // undifferentiated wall of inputs.
+    var card = el('div', {
+      class: 'card',
+      role: 'group',
+      'aria-labelledby': titleId,
     })
-    head.appendChild(del)
+
+    // Card header: question number label. The delete button now lives at the
+    // end of the card in the DOM (see below) so tab order goes through the
+    // fields first and hits the destructive action last.
+    var head = el('div', { class: 'card-head' })
+    head.appendChild(el('div', { class: 'card-title', id: titleId, text: 'Question ' + (qi + 1) }))
     card.appendChild(head)
 
     // Prompt
     var promptField = el('div', { class: 'field' })
-    var promptLabel = el('label', { for: 'q' + qi + '-prompt', text: 'Prompt (unbiased, open question)' })
+    var promptId = 'q' + qi + '-prompt'
+    var promptLabel = el('label', { for: promptId, text: 'Prompt (unbiased, open question)' })
     var promptInput = el('textarea', {
-      id: 'q' + qi + '-prompt',
+      id: promptId,
       rows: '2',
       placeholder: 'e.g. How well has the workshop prepared you to give feedback in real situations?',
     })
@@ -109,8 +131,9 @@
     // Kind + reference
     var row = el('div', { class: 'fields-row' })
     var kindField = el('div', { class: 'field' })
-    kindField.appendChild(el('label', { for: 'q' + qi + '-kind', text: 'Question kind' }))
-    var kindSel = el('select', { id: 'q' + qi + '-kind' })
+    var kindId = 'q' + qi + '-kind'
+    kindField.appendChild(el('label', { for: kindId, text: 'Question kind' }))
+    var kindSel = el('select', { id: kindId })
     ;[
       { value: 'opinion', label: 'Opinion (how the respondent feels)' },
       { value: 'behaviour', label: 'Behaviour (what they will/do do)' },
@@ -124,12 +147,10 @@
     row.appendChild(kindField)
 
     var refField = el('div', { class: 'field' })
-    refField.appendChild(el('label', {
-      for: 'q' + qi + '-ref',
-      text: 'Reference (short slug, optional)',
-    }))
+    var refId = 'q' + qi + '-ref'
+    refField.appendChild(el('label', { for: refId, text: 'Reference (short slug, optional)' }))
     var refInput = el('input', {
-      id: 'q' + qi + '-ref',
+      id: refId,
       type: 'text',
       placeholder: 'e.g. prepared-to-apply',
     })
@@ -141,8 +162,9 @@
 
     // Comment checkbox
     var commentField = el('div', { class: 'field' })
-    var commentLabel = el('label', { for: 'q' + qi + '-comment' })
-    var commentBox = el('input', { id: 'q' + qi + '-comment', type: 'checkbox' })
+    var commentId = 'q' + qi + '-comment'
+    var commentLabel = el('label', { for: commentId })
+    var commentBox = el('input', { id: commentId, type: 'checkbox' })
     commentBox.checked = q.comment !== false
     commentBox.addEventListener('change', function () { q.comment = commentBox.checked })
     commentLabel.style.display = 'flex'
@@ -170,13 +192,38 @@
 
     var addStmt = el('button', {
       class: 'btn subtle', type: 'button', text: '+ Add statement',
+      'aria-label': 'Add a statement to question ' + (qi + 1),
     })
     addStmt.addEventListener('click', function () {
+      var newSi = q.statements.length
       q.statements.push({ text: '', band: 'acceptable' })
       render()
+      // Move focus into the new statement so the author can type immediately.
+      var newField = document.getElementById('q' + qi + '-stmt-' + newSi)
+      if (newField) newField.focus()
       status('Statement added.')
     })
     card.appendChild(addStmt)
+
+    // Delete question — last in DOM order (so tab flow lands here last),
+    // but visually positioned at the top-right of the card via CSS.
+    var del = el('button', {
+      class: 'btn danger card-remove', type: 'button', text: 'Remove question',
+      'aria-label': 'Remove question ' + (qi + 1),
+    })
+    del.addEventListener('click', function () {
+      if (!confirm('Remove question ' + (qi + 1) + '?')) return
+      var focusIndex = Math.max(0, qi - 1)
+      state.questions.splice(qi, 1)
+      render()
+      // After removal, hand focus to a sensible neighbour so the keyboard
+      // user doesn't get dumped at the top of the page.
+      var next = document.getElementById('q' + focusIndex + '-prompt')
+      if (next) next.focus()
+      else document.getElementById('add-question').focus()
+      status('Question ' + (qi + 1) + ' removed.')
+    })
+    card.appendChild(del)
 
     return card
   }
@@ -184,15 +231,16 @@
   function renderStatement(q, qi, si, s) {
     var row = el('div', { class: 'statement' })
     var textInput = el('input', {
+      id: 'q' + qi + '-stmt-' + si,
       type: 'text',
       placeholder: 'e.g. I could give useful feedback in most situations.',
-      'aria-label': 'Statement text',
+      'aria-label': 'Statement ' + (si + 1) + ' text',
     })
     textInput.value = s.text
     textInput.addEventListener('input', function () { s.text = textInput.value })
     row.appendChild(textInput)
 
-    var bandSel = el('select', { 'aria-label': 'Band' })
+    var bandSel = el('select', { 'aria-label': 'Statement ' + (si + 1) + ' band' })
     BANDS.forEach(function (b) {
       var o = el('option', { value: b.value, text: b.label })
       if (s.band === b.value) o.selected = true
@@ -203,15 +251,20 @@
 
     var remove = el('button', {
       class: 'btn danger', type: 'button', text: 'Remove',
-      'aria-label': 'Remove statement',
+      'aria-label': 'Remove statement ' + (si + 1),
     })
     remove.addEventListener('click', function () {
       if (q.statements.length <= 2) {
         status('A question needs at least two statements.', 'err')
         return
       }
+      var focusSi = Math.max(0, si - 1)
       q.statements.splice(si, 1)
       render()
+      // Focus the previous statement's text input (or the first, if we
+      // just removed the first) so tab flow continues from a sensible spot.
+      var next = document.getElementById('q' + qi + '-stmt-' + focusSi)
+      if (next) next.focus()
     })
     row.appendChild(remove)
     return row
@@ -234,11 +287,8 @@
       var q = state.questions[i]
       if (!q.prompt.trim()) return 'Question ' + (i + 1) + ' needs a prompt.'
       if (!q.statements.length) return 'Question ' + (i + 1) + ' needs statements.'
-      var bands = {}
       for (var j = 0; j < q.statements.length; j++) {
-        var s = q.statements[j]
-        if (!s.text.trim()) return 'Question ' + (i + 1) + ' has a blank statement.'
-        bands[s.band] = true
+        if (!q.statements[j].text.trim()) return 'Question ' + (i + 1) + ' has a blank statement.'
       }
     }
     return null
@@ -284,13 +334,13 @@
   }
 
   function encodeCourseToLink(course) {
-    var b64 = btoa(unescape(encodeURIComponent(JSON.stringify(course))))
+    var b64 = utf8ToBase64(JSON.stringify(course))
     var origin = window.location.origin
     // If served from a file:// URL, fall back to andyrogers.design so shared
     // links still work on the deployed site.
     var base = (origin && origin.indexOf('http') === 0)
       ? origin + window.location.pathname.replace(/[^/]*$/, '') + TAKE_PATH
-      : 'https://andyrogers.design/demos/aes-survey/'
+      : 'https://andyrogers.design/demos/aes-survey/index.html'
     return base + '#s=' + b64
   }
 
@@ -328,8 +378,12 @@
     var err = validate()
     if (err) return status(err, 'err')
     var link = encodeCourseToLink(buildCourse())
+    var lengthNote = link.length > URL_WARN_LENGTH
+      ? ' (' + link.length + ' characters \u2014 quite long for a link; if it doesn\u2019t send by email, shorten the survey or try a chat app instead)'
+      : ''
     copyToClipboard(link).then(function () {
-      status('Shareable link copied to clipboard. Send it to your respondents.', 'ok')
+      status('Shareable link copied to clipboard. Send it to your respondents.' + lengthNote,
+        link.length > URL_WARN_LENGTH ? 'warn' : 'ok')
     }, function () {
       status('Couldn\u2019t copy automatically. Here it is: ' + link, 'err')
     })
@@ -368,10 +422,15 @@
   })
 
   document.getElementById('add-question').addEventListener('click', function () {
+    var newIndex = state.questions.length
     state.questions.push(newQuestion())
     render()
-    var host = document.getElementById('questions')
-    host.lastChild && host.lastChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    // Move focus into the new question's prompt for immediate typing.
+    var newField = document.getElementById('q' + newIndex + '-prompt')
+    if (newField) {
+      newField.focus()
+      newField.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    }
   })
 
   // Live-update the basics on input.

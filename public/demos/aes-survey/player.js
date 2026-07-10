@@ -43,15 +43,35 @@
       var params = new URLSearchParams(hash)
       var s = params.get('s')
       if (!s) return null
-      // atob returns a "binary string"; decodeURIComponent + escape converts
-      // it back to a real UTF-8 string so multibyte characters survive.
-      var json = decodeURIComponent(escape(atob(s)))
+      var json = base64ToUtf8(s)
       var parsed = JSON.parse(json)
       if (parsed && typeof parsed === 'object' && parsed.id && parsed.title) return parsed
       return null
     } catch (e) {
       return null
     }
+  }
+
+  // Base64 <-> UTF-8. Prefers modern TextEncoder/TextDecoder (available in
+  // every current browser), falls back to escape/unescape (still supported
+  // for legacy contexts and jsdom, which doesn't ship TextEncoder on window).
+  function utf8ToBase64(str) {
+    if (typeof TextEncoder !== 'undefined') {
+      var bytes = new TextEncoder().encode(str)
+      var bin = ''
+      for (var i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i])
+      return btoa(bin)
+    }
+    return btoa(unescape(encodeURIComponent(str)))
+  }
+  function base64ToUtf8(b64) {
+    var bin = atob(b64)
+    if (typeof TextDecoder !== 'undefined') {
+      var bytes = new Uint8Array(bin.length)
+      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+      return new TextDecoder().decode(bytes)
+    }
+    return decodeURIComponent(escape(bin))
   }
 
   // Per-question runtime state, keyed by block id. startTime is set when the
@@ -1193,9 +1213,9 @@
         var payloadJson = JSON.stringify(payload, null, 2)
 
         // Base64-encode the payload for the response link (URL-safe). Uses
-        // unescape+encodeURIComponent to survive UTF-8 characters correctly.
+        // TextEncoder under the hood to survive UTF-8 characters correctly.
         var b64 = ''
-        try { b64 = btoa(unescape(encodeURIComponent(JSON.stringify(payload)))) } catch (e) { b64 = '' }
+        try { b64 = utf8ToBase64(JSON.stringify(payload)) } catch (e) { b64 = '' }
         var responseUrl = (function () {
           if (!b64) return ''
           // Point at the analyser so a click opens the report with this one

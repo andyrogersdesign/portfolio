@@ -266,10 +266,17 @@
   // button) back to a Course-response object. Silent on error.
   function decodeBase64Payload(b64) {
     try {
-      // atob returns a "binary string"; the escape/unescape pair rescues
-      // multi-byte UTF-8 characters (e.g. curly quotes) intact.
-      var raw = typeof atob === 'function' ? atob(b64) : Buffer.from(b64, 'base64').toString('binary')
-      var json = decodeURIComponent(escape(raw))
+      // Prefer TextDecoder (modern browsers) with a fallback to the escape
+      // pair (legacy contexts and jsdom, which doesn't expose TextDecoder).
+      var bin = typeof atob === 'function' ? atob(b64) : Buffer.from(b64, 'base64').toString('binary')
+      var json
+      if (typeof TextDecoder !== 'undefined') {
+        var bytes = new Uint8Array(bin.length)
+        for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i)
+        json = new TextDecoder().decode(bytes)
+      } else {
+        json = decodeURIComponent(escape(bin))
+      }
       return JSON.parse(json)
     } catch (e) { return null }
   }
