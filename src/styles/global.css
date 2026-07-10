@@ -188,32 +188,50 @@ main section + section {
 }
 .hero .prose p { color: rgb(var(--ink) / 0.7); }
 
-/* ---- Impact stats -------------------------------------------------- */
-.impact {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1px;
-  margin: 1.5rem 0 0;
-  padding: 0;
+/* ---- Principles list (How I work) ---------------------------------- */
+.principles {
   list-style: none;
-  background: var(--border);        /* hairline gaps between cells */
-  border: 1px solid var(--border);
+  padding: 0;
+  counter-reset: principle;
+  margin: 1.5rem 0 0;
 }
-.impact li {
-  background: var(--bg);
-  padding: 1.75rem 1.5rem;
-  font-size: 0.9rem;
-  color: rgb(var(--ink) / 0.7);
+.principles li {
+  padding: 1.75rem 0;
+  border-top: 1px solid var(--border);
+  max-width: var(--measure);
+  counter-increment: principle;
+  position: relative;
 }
-.impact strong {
-  display: block;
-  font-size: clamp(1.75rem, 3vw, 2.5rem);
-  font-weight: 300;
-  letter-spacing: -0.02em;
-  color: rgb(var(--accent));
+.principles li:last-child { border-bottom: 1px solid var(--border); }
+.principles li::before {
+  content: counter(principle, decimal-leading-zero);
+  position: absolute;
+  right: 0;
+  top: 1.75rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: rgb(var(--ink) / 0.35);
   font-variant-numeric: tabular-nums;
-  margin-bottom: 0.5rem;
 }
+.principle-name {
+  font-size: 1.15rem;
+  font-weight: 500;
+  color: rgb(var(--ink));
+  letter-spacing: -0.005em;
+  margin: 0 0 0.5rem;
+  padding-right: 3rem; /* room for the number */
+}
+.principle-body {
+  color: rgb(var(--ink) / 0.75);
+  margin: 0 0 0.65rem;
+  text-wrap: pretty;
+}
+.principle-link {
+  margin: 0;
+  font-size: 0.9rem;
+}
+.principle-link a { color: rgb(var(--accent)); }
 
 /* ---- Capability list ----------------------------------------------- */
 .caps { padding-left: 0; list-style: none; margin: 1.5rem 0 0; }
@@ -373,17 +391,27 @@ article h1 { margin-top: 0.75rem; }
   min-height: 44px;
   padding: 0 24px;
   background: rgb(var(--accent));
-  color: rgb(var(--paper));
+  /* Always-light text: the button's background is always the accent (cobalt),
+     regardless of light or dark mode, so the text has to stay near-white. */
+  color: #fafaf9;
   font-weight: 500;
   text-decoration: none;
   transition: background 0.15s ease;
 }
 .btn-link:hover, .btn-link:focus-visible {
   background: rgb(var(--ink));
-  color: rgb(var(--paper));
+  color: #fafaf9;
 }
 .small-note {
   font-size: 0.9rem;
   color: rgb(var(--ink) / 0.6);
   margin-top: -8px;
 }
+
+/* Demos page: the "further reading" line under the intro. */
+.reads {
+  font-size: 0.95rem;
+  color: rgb(var(--ink) / 0.7);
+  margin-top: 1rem;
+}
+.reads a { white-space: nowrap; }

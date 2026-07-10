@@ -6,19 +6,36 @@ const featured = (await getCollection('work', ({ data }) => !data.draft)).sort(
   (a, b) => b.data.date.valueOf() - a.data.date.valueOf()
 );
 
-const impact = [
-  { figure: '−26% / −22%', label: 'major / minor localisation defects, year-on-year, across 1,750+ external linguists' },
-  { figure: '20% → 76%', label: 'judgement alignment on errors, from a programme built in one week' },
-  { figure: '23% → 62%', label: 'participation in non-mandatory learning' },
-  { figure: '97%', label: 'satisfaction at the Amazon Localization Summit (+4,300 bps year-on-year)' },
+const principles = [
+  {
+    name: 'Behaviour change over rote learning',
+    body:
+      'Corporate education isn\u2019t about handing over facts. It\u2019s about shifting how people actually work, and any design that doesn\u2019t measurably move that dial hasn\u2019t done its job.',
+    href: 'https://lab.andyrogers.design/p/actionable-experience-surveys',
+    linkText: 'Read: A call for the resignation of the customer satisfaction survey',
+  },
+  {
+    name: 'Numbers and meaning belong together',
+    body:
+      'A metric stripped from the design that produced it is just a shrug in a suit. Every measurement should carry the story of how it was made \u2013 so it can be trusted, challenged, or acted on.',
+    href: 'https://lab.andyrogers.design/p/aesurvey-studio',
+    linkText: 'Read: Ship the recipe, not the restaurant',
+  },
+  {
+    name: 'The generalist as multiplier',
+    body:
+      'No single design discipline fits every problem. Moving between learning design, media, data, and tooling means the solution can match the problem \u2013 not the other way around.',
+    href: '/demos',
+    linkText: 'See it in action: AESurvey Studio demos',
+  },
 ];
 
 const capabilities = [
-  { name: 'AI capability & enablement', detail: 'GenAI integration, LLM applications, agentic workflows, AI-literacy and adoption programmes' },
+  { name: 'AI capability & enablement', detail: 'GenAI integration, LLM applications, agentic workflows, AI-literacy and adoption programs' },
   { name: 'Learning Experience Design', detail: 'instructional design, adult learning, assessment, eLearning, needs analysis' },
   { name: 'Behaviour change & evaluation', detail: 'change management, adoption, impact measurement from reaction through to business outcomes' },
   { name: 'Data & automation', detail: 'Python automation, learning analytics, data visualisation, dashboards' },
-  { name: 'Design & multimedia', detail: 'Adobe Creative Cloud, video production, motion graphics, brand and design systems' },
+  { name: 'Media design', detail: 'video, motion, brand systems, photography, audio and podcast production' },
 ];
 ---
 
@@ -27,27 +44,44 @@ const capabilities = [
     <section class="hero">
       <h1>Andy Rogers</h1>
       <p class="role">Senior Learning Strategist</p>
-      <p class="tagline">Enabling AI adoption and measurable behaviour change at scale.</p>
+      <p class="tagline">A design generalist. I let the problem pick the discipline &ndash; learning programs, media design, data pipelines, and custom tooling.</p>
       <div class="prose">
         <p>
-          I build and lead Learning Experience Design for Amazon's Translation Services, turning AI
-          and complex operational problems into workforce capability and lasting behaviour change. I
-          move into an unfamiliar domain, work out what actually needs to change, and make it
-          learnable, usable, and effective.
+          My work turns AI adoption, complex operations, and workflow change into workforce
+          capability that actually sticks. I move into an unfamiliar domain, work out what actually
+          needs to change, and make it learnable, usable, and effective.
         </p>
         <p>
-          I'm a maker as much as a strategist: equally at home building the data pipelines, AI tools,
-          video, and platforms myself, or developing a team to deliver them alongside me. This site
-          collects the work and the thinking behind it.
+          Maker as much as strategist: in any given week I might set the strategy, cut the video,
+          build the data pipeline, or ship the AI tool that closes the gap &ndash; or develop the
+          team that delivers it all alongside me. This site collects the work and the thinking
+          behind it.
         </p>
       </div>
     </section>
 
     <section>
-      <h2>Selected impact</h2>
-      <ul class="impact">
-        {impact.map((i) => (
-          <li><strong>{i.figure}</strong>{i.label}</li>
+      <h2>How I work</h2>
+      <ol class="principles">
+        {principles.map((p) => (
+          <li>
+            <h3 class="principle-name">{p.name}</h3>
+            <p class="principle-body">{p.body}</p>
+            <p class="principle-link">
+              <a href={p.href} {...(p.href.startsWith('http') ? { target: '_blank', rel: 'noopener' } : {})}>
+                {p.linkText} &rarr;
+              </a>
+            </p>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section>
+      <h2>What I do</h2>
+      <ul class="caps">
+        {capabilities.map((c) => (
+          <li><strong>{c.name}</strong> &ndash; {c.detail}</li>
         ))}
       </ul>
     </section>
@@ -65,29 +99,20 @@ const capabilities = [
                 <span class="theme">{entry.data.theme}</span>
                 <h3>{entry.data.title}</h3>
                 <p>{entry.data.summary}</p>
-                {entry.data.labUrl && <span class="card-cta">Read on the Lab →</span>}
+                {entry.data.labUrl && <span class="card-cta">Read on the Lab &rarr;</span>}
               </a>
             </li>
           ))}
         </ul>
-        <p><a href="/work/">See all work →</a></p>
+        <p><a href="/work/">See all work &rarr;</a></p>
       </section>
     )}
-
-    <section>
-      <h2>What I do</h2>
-      <ul class="caps">
-        {capabilities.map((c) => (
-          <li><strong>{c.name}</strong> — {c.detail}</li>
-        ))}
-      </ul>
-    </section>
 
     <section class="prose">
       <h2>Get in touch</h2>
       <p>
-        <a href="mailto:hello@andyrogers.design">hello@andyrogers.design</a> ·
-        <a href="https://www.linkedin.com/in/andyrogersdesign">LinkedIn</a> ·
+        <a href="mailto:hello@andyrogers.design">hello@andyrogers.design</a> &middot;
+        <a href="https://www.linkedin.com/in/andyrogersdesign">LinkedIn</a> &middot;
         <a href="https://lab.andyrogers.design">The Lab</a>
       </p>
     </section>
