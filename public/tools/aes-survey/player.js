@@ -28,7 +28,7 @@
     noSurvey.className = 'course no-survey'
     noSurvey.innerHTML = '<h1>No survey loaded</h1>' +
       '<p>This link doesn\u2019t include a survey. Please check the URL you were sent, ' +
-      'or return to <a href="/demos">the demos page</a> to see an example.</p>'
+      'or return to <a href="/tools">the tools page</a> to see an example.</p>'
     root.appendChild(noSurvey)
     return
   }
@@ -1220,7 +1220,7 @@
           if (!b64) return ''
           // Point at the analyser so a click opens the report with this one
           // response loaded. Falls back to a relative path in dev.
-          var analyserBase = 'https://andyrogers.design/demos/aes-report/'
+          var analyserBase = 'https://andyrogers.design/tools/aes-report/'
           return analyserBase + '#r=' + b64
         })()
 

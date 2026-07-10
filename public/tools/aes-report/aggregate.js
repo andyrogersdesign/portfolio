@@ -282,7 +282,7 @@
   }
 
   // Extract the base64 response payload from a URL like
-  //   https://andyrogers.design/demos/aes-report/#r=<base64>
+  //   https://andyrogers.design/tools/aes-report/#r=<base64>
   // Returns null if not a valid response URL.
   function extractResponseFromUrl(url) {
     var m = /[#&?]r=([A-Za-z0-9+/=_-]+)/.exec(String(url || ''))

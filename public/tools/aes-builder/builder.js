@@ -2,7 +2,7 @@
  * AES Survey Builder — standalone client-side authoring UI.
  *
  * Produces a Course object matching src/content/model.ts, encoded as
- * base64 in a URL fragment ("#s=<b64>"). The take page at /demos/aes-survey/
+ * base64 in a URL fragment ("#s=<b64>"). The take page at /tools/aes-survey/
  * decodes and renders it.
  *
  * No dependencies, no build step. Works from file:// or a static host.
@@ -340,7 +340,7 @@
     // links still work on the deployed site.
     var base = (origin && origin.indexOf('http') === 0)
       ? origin + window.location.pathname.replace(/[^/]*$/, '') + TAKE_PATH
-      : 'https://andyrogers.design/demos/aes-survey/index.html'
+      : 'https://andyrogers.design/tools/aes-survey/index.html'
     return base + '#s=' + b64
   }
 
