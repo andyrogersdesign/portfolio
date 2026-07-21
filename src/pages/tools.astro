@@ -6,19 +6,65 @@ import Base from '../layouts/Base.astro';
   <div class="container">
     <section class="hero">
       <h1>Tools</h1>
-      <p class="tagline">A small open-source toolkit for Actionable Experience Surveys &mdash; a survey method I designed to replace flat &ldquo;lovely&rdquo; scores with feedback you can act on.</p>
+      <p class="tagline">Open, self-hostable tools for the two ends of learning &mdash; making it, and measuring it.</p>
       <div class="prose">
         <p>
-          <strong>Actionable Experience Surveys (AES)</strong> are a survey method I designed to replace flat
-          &ldquo;lovely&rdquo; satisfaction scores with feedback you can actually act on. Every question uses an
-          unbiased prompt, four or more real-sentence answer options, and a mapping to bands
-          (Alarming &rarr; Concerning &rarr; Acceptable &rarr; Superior). The result is a headline number and a
-          specific to-do list, from the same question.
+          Two tools live here. Both run entirely in your browser, both are open source (MIT), and both
+          can be run on your own machine &mdash; nothing touches anyone else&rsquo;s servers.
         </p>
         <p>
-          <strong>AESurvey Studio</strong> is the small open-source toolkit that makes AES easy to run:
-          a report analyser, a survey builder, and a browser-based take page. Everything runs client-side &mdash; no
-          server, no login, no data touching anyone else&rsquo;s infrastructure.
+          <strong>Folio</strong> is a local-first authoring tool: build a course as blocks and export a
+          SCORM package for any LMS &mdash; with AES surveys built in, so a survey and a course can share
+          the same package.
+        </p>
+        <p>
+          <strong>AESurvey Studio</strong> is a small toolkit for Actionable Experience Surveys, a method
+          I designed to replace flat &ldquo;lovely&rdquo; satisfaction scores with feedback you can act on.
+          Build a survey, run it, and read the results as a Below / Above the Bar report.
+        </p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Folio &mdash; a SCORM authoring tool</h2>
+      <div class="prose">
+        <p>
+          <strong>Folio</strong> is a local-first eLearning authoring tool. You build a course as lessons
+          of blocks &mdash; text, images, video, knowledge checks &mdash; and export a SCORM package for any
+          LMS. It runs entirely in your browser: no server, no login, nothing leaving your machine.
+        </p>
+        <p>
+          It also speaks AES. Alongside the usual blocks there&rsquo;s an Actionable Experience Survey
+          question type, so a survey and a course can sit in the same package. Each response is recorded as
+          SCORM interactions &mdash; the band, the exact statement picked, and any comment &mdash; and any
+          package with a survey carries a survey map, so the responses read back cleanly in the AES report
+          analyser on this page, or in any tool you like.
+        </p>
+      </div>
+      <p>
+        <a class="btn-link" href="/tools/folio/index.html" target="_blank" rel="noopener">Open Folio &rarr;</a>
+      </p>
+      <p class="small-note">
+        Prefer to run it yourself? Folio is local-first by design. Download it from
+        <a href="https://github.com/andyrogersdesign/folio">GitHub</a> and run it on your own machine
+        (Node 20+, then <code>npm install</code> and <code>npm run dev</code> &mdash; or double-click
+        <code>Start Folio.command</code> on a Mac). Running it locally also gives you automatic on-disk
+        backups, which the hosted version above can&rsquo;t. Open source under an MIT licence.
+      </p>
+    </section>
+
+    <section>
+      <h2>AESurvey Studio</h2>
+      <div class="prose">
+        <p>
+          <strong>Actionable Experience Surveys (AES)</strong> replace flat &ldquo;lovely&rdquo; satisfaction
+          scores with feedback you can actually act on. Every question uses an unbiased prompt, four or more
+          real-sentence answer options, and a mapping to bands (Alarming &rarr; Concerning &rarr; Acceptable
+          &rarr; Superior). The result is a headline number and a specific to-do list, from the same question.
+        </p>
+        <p>
+          <strong>AESurvey Studio</strong> is the small open-source toolkit that makes AES easy to run: a
+          report analyser, a survey builder, and a browser-based take page. Everything runs client-side.
         </p>
         <p class="reads">
           Full write-ups on the Lab:
@@ -27,20 +73,16 @@ import Base from '../layouts/Base.astro';
           <a href="https://lab.andyrogers.design/p/a-restaurant-or-a-recipe">Why I built the tool &rarr;</a>
         </p>
       </div>
-    </section>
 
-    <section>
-      <h2>1. Explore a report</h2>
+      <h3>Explore a report</h3>
       <p>Click <em>Load sample data</em> below to see what a completed AES report looks like &mdash; twelve
         respondents across four questions. Hover any band segment for the statement respondents
         picked, and expand a question&rsquo;s comments to read what they said. Or drop in your own
         response files.</p>
       <iframe class="demo-frame" src="/tools/aes-report/index.html" title="AES Report" loading="lazy"></iframe>
       <p><a href="/tools/aes-report/index.html">Open the report full screen &rarr;</a></p>
-    </section>
 
-    <section>
-      <h2>2. Build your own survey</h2>
+      <h3>Build your own survey</h3>
       <p>Write the questions, tag each statement to a band, and get a shareable link. Send that
         link to your respondents &mdash; they take the survey in their browser and email you their
         responses, or copy a link that opens the report above with their single answer pre-loaded.
@@ -49,10 +91,8 @@ import Base from '../layouts/Base.astro';
         <a class="btn-link" href="/tools/aes-builder/index.html">Open the survey builder &rarr;</a>
       </p>
       <p class="small-note">Click <em>Load demo</em> inside the builder to see how the example above is put together.</p>
-    </section>
 
-    <section>
-      <h2>3. Deploy in your own LMS</h2>
+      <h3>Deploy in your own LMS</h3>
       <p>A ready-to-upload example AES survey &mdash; a short post-workshop reflection on giving effective
         feedback. It records each respondent&rsquo;s band, the exact statement they picked, and any
         free-text comment as SCORM interactions, so you can export the responses (as a Track-details
@@ -70,10 +110,8 @@ import Base from '../layouts/Base.astro';
           </li>
         </ul>
       </div>
-    </section>
 
-    <section class="demo-author">
-      <h2>Under the hood</h2>
+      <h3>Under the hood</h3>
       <p>
         AESurvey Studio is open source under an MIT licence. The builder above is the current
         authoring surface; the SCORM engine, the response model, and the analyser are all in the
